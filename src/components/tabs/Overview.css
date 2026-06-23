@@ -1,27 +1,50 @@
-.tab-content {
-  animation: fadeIn 0.3s ease;
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.section {
-  margin-bottom: 2rem;
-}
-
-.section h2 {
+.section-header h2 {
+  margin: 0;
   font-size: 16px;
   font-weight: 500;
-  margin-bottom: 1rem;
   color: #333;
+}
+
+.month-selector {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.month-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.month-btn:hover {
+  border-color: #185FA5;
+  color: #185FA5;
+}
+
+.month-btn.active {
+  background: #185FA5;
+  color: white;
+  border-color: #185FA5;
+}
+
+.variation-badge {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
 }
 
 .chart-container {

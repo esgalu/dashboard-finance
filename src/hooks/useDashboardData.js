@@ -36,6 +36,17 @@ export function useDashboardData() {
       color: colors[idx % colors.length]
     }))
 
+    // Procesar expensesByMonth si existe (de Google Sheets)
+    const categoriesByMonth = {}
+    if (rawData.expensesByMonth && Object.keys(rawData.expensesByMonth).length > 0) {
+      Object.entries(rawData.expensesByMonth).forEach(([month, categories]) => {
+        categoriesByMonth[month] = categories.map((cat, idx) => ({
+          ...cat,
+          color: colors[idx % colors.length]
+        }))
+      })
+    }
+
     const accountsProcessed = Object.entries(savingsData)
       .filter(([_, value]) => value > 0)
       .map(([account, value]) => ({
@@ -49,6 +60,7 @@ export function useDashboardData() {
       kpis,
       expenses: {
         categories: expensesWithColor,
+        categoriesByMonth,
         monthly: rawData.monthlyExpense
       },
       trend: trendData,

@@ -1,0 +1,74 @@
+.account-filter {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.select-all-btn {
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  background: #185FA5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.select-all-btn:hover {
+  background: #0C447C;
+}
+
+.account-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.account-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.account-checkbox input {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.checkbox-color {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.checkbox-label {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart-container.tall {
+  height: 400px;
+}
+
+@media (max-width: 768px) {
+  .account-checkboxes {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .chart-container.tall {
+    height: 300px;
+  }
+}

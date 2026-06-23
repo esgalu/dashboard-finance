@@ -125,10 +125,11 @@ async function loadSnapshots(accessToken, spreadsheetId) {
 }
 
 function parseCostsSheet(rows) {
-  if (!rows || rows.length < 2) return { expenses: [], monthlyExpense: [] }
+  if (!rows || rows.length < 2) return { expenses: [], monthlyExpense: [], expensesByMonth: {} }
 
   const categoryTotals = {}
   const monthlyTotals = {}
+  const expensesByMonth = {}
   let grandTotal = 0
 
   for (let r = 1; r < rows.length; r++) {
@@ -146,6 +147,12 @@ function parseCostsSheet(rows) {
 
     if (yearMonth) {
       monthlyTotals[yearMonth] = (monthlyTotals[yearMonth] || 0) + costo
+
+      // Agregar a expensesByMonth
+      if (!expensesByMonth[yearMonth]) {
+        expensesByMonth[yearMonth] = {}
+      }
+      expensesByMonth[yearMonth][clasificacion] = (expensesByMonth[yearMonth][clasificacion] || 0) + costo
     }
   }
 
@@ -161,7 +168,20 @@ function parseCostsSheet(rows) {
     .map(([month, total]) => ({ month, total: Math.round(total) }))
     .sort((a, b) => a.month.localeCompare(b.month))
 
-  return { expenses, monthlyExpense }
+  // Convertir expensesByMonth a array de objetos con name, value, pct por cada mes
+  const expensesByMonthProcessed = {}
+  Object.entries(expensesByMonth).forEach(([month, categories]) => {
+    const monthTotal = monthlyTotals[month]
+    expensesByMonthProcessed[month] = Object.entries(categories)
+      .map(([name, value]) => ({
+        name,
+        value: Math.round(value),
+        pct: monthTotal > 0 ? Math.round((value / monthTotal) * 1000) / 10 : 0
+      }))
+      .sort((a, b) => b.value - a.value)
+  })
+
+  return { expenses, monthlyExpense, expensesByMonth: expensesByMonthProcessed }
 }
 
 function parseMovementsSheet(rows) {
@@ -188,7 +208,7 @@ export async function fetchSheetData(accessToken, spreadsheetId) {
     headers: { Authorization: `Bearer ${accessToken}` }
   })
 
-  const { expenses, monthlyExpense } = parseCostsSheet(
+  const { expenses, monthlyExpense, expensesByMonth } = parseCostsSheet(
     rangesResponse.data.valueRanges[0]?.values
   )
 
@@ -227,6 +247,7 @@ export async function fetchSheetData(accessToken, spreadsheetId) {
     savings,
     expenses,
     monthlyExpense,
+    expensesByMonth,
     trend: trendArray,
     movements
   }
