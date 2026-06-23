@@ -13,7 +13,7 @@ import './styles/App.css'
 
 function App() {
   const [activeTab, setActiveTab] = useState('overview')
-  const { kpis, expenses, trend, accounts, movements, isLoading, error, dataSource, refreshData } = useDashboardData()
+  const { kpis, expenses, trend, accounts, movements, accountTimeSeries, isLoading, error, dataSource, refreshData } = useDashboardData()
 
   return (
     <div className="app-container">
@@ -43,7 +43,7 @@ function App() {
             <div className="tab-container">
               {activeTab === 'overview' && <Overview expenses={expenses} />}
               {activeTab === 'trends' && <Trends trend={trend} />}
-              {activeTab === 'accounts' && <Accounts accounts={accounts} total={kpis.patrimony} />}
+              {activeTab === 'accounts' && <Accounts accounts={accounts} total={kpis.patrimony} accountTimeSeries={accountTimeSeries} />}
             </div>
 
             <Activity movements={movements} />

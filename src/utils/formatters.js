@@ -32,6 +32,12 @@ export function formatDateShort(dateStr) {
   if (!dateStr) return ''
 
   try {
+    // Si viene como numero serial de Excel (ej: 46204)
+    if (typeof dateStr === 'number' && dateStr > 40000 && dateStr < 60000) {
+      const d = new Date((dateStr - 25569) * 86400000)
+      return new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short' }).format(d).replace('.', '')
+    }
+
     // Si viene como "2026-06-22"
     let date
     if (typeof dateStr === 'string' && dateStr.includes('-')) {

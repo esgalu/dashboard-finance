@@ -1,36 +1,65 @@
+import { formatCurrency, formatShortCurrency, getTrendIndicator, getTrendColor } from '../utils/formatters'
 import './KPICards.css'
 
 export default function KPICards({ kpis }) {
-  const formatCurrency = (num) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      notation: 'compact',
-      maximumFractionDigits: 0
-    }).format(num)
-  }
+  const cards = [
+    {
+      label: 'Patrimonio Total',
+      value: formatShortCurrency(kpis.patrimony),
+      subtitle: formatCurrency(kpis.patrimony)
+    },
+    {
+      label: 'Ahorros Disponibles',
+      value: formatShortCurrency(kpis.savings),
+      subtitle: formatCurrency(kpis.savings)
+    },
+    {
+      label: 'Inversiones',
+      value: formatShortCurrency(kpis.investments),
+      subtitle: formatCurrency(kpis.investments)
+    },
+    {
+      label: 'Meses de Runway',
+      value: kpis.runway,
+      subtitle: null
+    },
+    {
+      label: 'Gasto Este Mes',
+      value: formatShortCurrency(kpis.currentMonthExpense),
+      subtitle: formatCurrency(kpis.currentMonthExpense),
+      change: kpis.expenseChange,
+      invertColor: true
+    },
+    {
+      label: 'Cambio Patrimonial',
+      value: `${kpis.patrimonyChange > 0 ? '+' : ''}${kpis.patrimonyChange?.toFixed(1) || 0}%`,
+      subtitle: null,
+      change: kpis.patrimonyChange
+    }
+  ]
 
   return (
     <div className="kpi-grid">
-      <div className="kpi-card">
-        <p className="kpi-label">Patrimonio Total</p>
-        <p className="kpi-value">${Math.round(kpis.patrimony / 1000000)}M</p>
-      </div>
-      
-      <div className="kpi-card">
-        <p className="kpi-label">Ahorros Disponibles</p>
-        <p className="kpi-value">${Math.round(kpis.savings / 1000000)}M</p>
-      </div>
+      {cards.map((card, idx) => {
+        const changeVal = card.change
+        const hasChange = changeVal !== undefined && changeVal !== 0
+        const changeColor = card.invertColor
+          ? getTrendColor(-changeVal)
+          : getTrendColor(changeVal)
 
-      <div className="kpi-card">
-        <p className="kpi-label">Inversiones</p>
-        <p className="kpi-value">${Math.round(kpis.investments / 1000000)}M</p>
-      </div>
-
-      <div className="kpi-card">
-        <p className="kpi-label">Meses de Runway</p>
-        <p className="kpi-value">{kpis.runway}</p>
-      </div>
+        return (
+          <div key={idx} className="kpi-card">
+            <p className="kpi-label">{card.label}</p>
+            <p className="kpi-value">{card.value}</p>
+            {card.subtitle && <p className="kpi-subtitle">{card.subtitle}</p>}
+            {hasChange && (
+              <p className="kpi-change" style={{ color: changeColor }}>
+                {getTrendIndicator(card.invertColor ? -changeVal : changeVal)} {Math.abs(changeVal).toFixed(1)}% vs mes ant.
+              </p>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

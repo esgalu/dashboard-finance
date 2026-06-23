@@ -51,5 +51,7 @@ export const DATA = {
     { date: '2026-05-04', total: 75680803 },
     { date: '2026-05-11', total: 75834834 },
     { date: '2026-06-22', total: 74904189 }
-  ]
+  ],
+
+  snapshots: []
 }

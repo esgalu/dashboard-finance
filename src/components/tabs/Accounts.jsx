@@ -1,7 +1,8 @@
 import { formatCurrency } from '../../utils/formatters'
+import AccountsEvolution from './AccountsEvolution'
 import '../tabs/Accounts.css'
 
-export default function Accounts({ accounts, total }) {
+export default function Accounts({ accounts, total, accountTimeSeries }) {
   if (!accounts || !Array.isArray(accounts) || accounts.length === 0) {
     return (
       <div className="tab-content">
@@ -33,6 +34,10 @@ export default function Accounts({ accounts, total }) {
           })}
         </div>
       </div>
+
+      {accountTimeSeries && accountTimeSeries.length > 0 && (
+        <AccountsEvolution accounts={accounts} trend={accountTimeSeries} />
+      )}
     </div>
   )
 }

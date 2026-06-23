@@ -83,7 +83,7 @@ function parseSnapshotsFromV11(rows) {
   return rows.slice(1)
     .filter(row => row && row.length >= 4)
     .map(row => ({
-      fecha: String(row[0]).slice(0, 10),
+      fecha: serialToDate(row[0]),
       banco: String(row[1]).trim(),
       etiqueta: String(row[2]).trim(),
       saldo: getVal(row, 3)
@@ -190,12 +190,13 @@ function parseMovementsSheet(rows) {
   return rows.slice(1)
     .filter(row => row && row.length >= 5 && row[0] && row[1])
     .map(row => ({
-      fecha: String(row[0]).slice(0, 10),
+      fecha: serialToDate(row[0]),
       banco: String(row[1]).trim(),
       etiqueta: String(row[2]).trim(),
       monto: getVal(row, 3),
       tipo: String(row[4]).trim().toUpperCase()
     }))
+    .filter(m => m.fecha)
     .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
 }
 
@@ -239,9 +240,16 @@ export async function fetchSheetData(accessToken, spreadsheetId) {
     })
   }
 
+  // Filtrar fechas con datos incompletos:
+  // si el total cae mas de 40% respecto al punto anterior, es un snapshot incompleto
   const trendArray = Object.entries(trend)
     .map(([date, total]) => ({ date, total: Math.round(total) }))
     .sort((a, b) => a.date.localeCompare(b.date))
+    .filter((point, i, arr) => {
+      if (i === 0) return true
+      const prev = arr[i - 1].total
+      return point.total > prev * 0.6
+    })
 
   return {
     savings,
@@ -249,6 +257,7 @@ export async function fetchSheetData(accessToken, spreadsheetId) {
     monthlyExpense,
     expensesByMonth,
     trend: trendArray,
-    movements
+    movements,
+    snapshots
   }
 }

@@ -1,0 +1,92 @@
+.comparison-selectors {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.comparison-selectors select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #333;
+  background: white;
+  cursor: pointer;
+}
+
+.comparison-selectors select:focus {
+  outline: none;
+  border-color: #185FA5;
+}
+
+.comparison-vs {
+  font-size: 0.85rem;
+  color: #999;
+  font-weight: 600;
+}
+
+.comparison-summary {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.comparison-table {
+  margin-top: 1.5rem;
+}
+
+.comparison-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr 1fr;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+  font-size: 0.82rem;
+}
+
+.comparison-header {
+  font-weight: 600;
+  color: #666;
+  border-bottom: 2px solid #e0e0e0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.comparison-total {
+  font-weight: 700;
+  border-top: 2px solid #e0e0e0;
+  border-bottom: none;
+  padding-top: 0.75rem;
+}
+
+.comp-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.comp-val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.comp-change {
+  text-align: right;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+  .comparison-row {
+    grid-template-columns: 1.5fr 1fr 1fr 0.8fr;
+    font-size: 0.75rem;
+  }
+
+  .comparison-selectors {
+    flex-wrap: wrap;
+  }
+}

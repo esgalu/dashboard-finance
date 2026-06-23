@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { formatMonth, calculateChange } from '../../utils/formatters'
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts'
+import { formatMonth, formatCurrency, formatShortCurrency, calculateChange } from '../../utils/formatters'
+import MonthComparison from './MonthComparison'
 import '../tabs/Overview.css'
 
 export default function Overview({ expenses }) {
@@ -10,6 +11,10 @@ export default function Overview({ expenses }) {
   const pieChartData = selectedMonth && expenses.categoriesByMonth?.[selectedMonth]
     ? expenses.categoriesByMonth[selectedMonth]
     : expenses.categories
+
+  const pieTitle = selectedMonth
+    ? `Gastos por Categoría - ${formatMonth(selectedMonth)}`
+    : 'Gastos por Categoría (Total)'
 
   const monthVariation = (() => {
     if (expenses.monthly && expenses.monthly.length >= 2) {
@@ -24,11 +29,16 @@ export default function Overview({ expenses }) {
 
   return (
     <div className="tab-content">
-      {/* Gastos por Categoría */}
       <div className="section">
         <div className="section-header">
-          <h2>Gastos por Categoría</h2>
+          <h2>{pieTitle}</h2>
           <div className="month-selector">
+            <button
+              className={`month-btn ${!selectedMonth ? 'active' : ''}`}
+              onClick={() => setSelectedMonth(null)}
+            >
+              Todos
+            </button>
             {availableMonths.map(month => (
               <button
                 key={month}
@@ -57,13 +67,12 @@ export default function Overview({ expenses }) {
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => `$${Math.round(value / 1000)}K`} />
+              <Tooltip formatter={(value) => formatCurrency(value)} />
             </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Gasto Mensual */}
       <div className="section">
         <div className="section-header">
           <h2>Gasto Mensual</h2>
@@ -75,19 +84,25 @@ export default function Overview({ expenses }) {
         </div>
         <div className="chart-container">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={expenses.monthly} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <BarChart data={expenses.monthly} margin={{ top: 30, right: 30, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" tickFormatter={(month) => formatMonth(month)} />
-              <YAxis />
+              <YAxis tickFormatter={formatShortCurrency} />
               <Tooltip
-                formatter={(value) => `$${Math.round(value / 1000000)}M`}
+                formatter={(value) => formatCurrency(value)}
                 labelFormatter={(month) => formatMonth(month)}
               />
-              <Bar dataKey="total" fill="#185FA5" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="total" fill="#185FA5" radius={[8, 8, 0, 0]}>
+                <LabelList dataKey="total" position="top" formatter={formatShortCurrency} style={{ fontSize: 11, fill: '#333' }} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
+
+      {expenses.categoriesByMonth && Object.keys(expenses.categoriesByMonth).length >= 2 && (
+        <MonthComparison expenses={expenses} />
+      )}
     </div>
   )
 }
