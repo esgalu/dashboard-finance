@@ -7,12 +7,13 @@ import Accounts from './components/tabs/Accounts'
 import AuthStatus from './components/AuthStatus'
 import LoadingOverlay from './components/LoadingOverlay'
 import ErrorBanner from './components/ErrorBanner'
+import Activity from './components/Activity'
 import { useDashboardData } from './hooks/useDashboardData'
 import './styles/App.css'
 
 function App() {
   const [activeTab, setActiveTab] = useState('overview')
-  const { kpis, expenses, trend, accounts, isLoading, error, dataSource, refreshData } = useDashboardData()
+  const { kpis, expenses, trend, accounts, movements, isLoading, error, dataSource, refreshData } = useDashboardData()
 
   return (
     <div className="app-container">
@@ -44,6 +45,8 @@ function App() {
               {activeTab === 'trends' && <Trends trend={trend} />}
               {activeTab === 'accounts' && <Accounts accounts={accounts} total={kpis.patrimony} />}
             </div>
+
+            <Activity movements={movements} />
           </>
         )}
 

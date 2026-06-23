@@ -23,13 +23,14 @@ function getVal(row, idx) {
   return isNaN(num) ? 0 : num
 }
 
-function parseSavingsSheet(rows) {
-  if (!rows || rows.length < 2) return { savings: {}, trend: [] }
+// V1.0: Lee estructura horizontal (fechas en columnas)
+function parseSnapshotsFromV1(rows) {
+  if (!rows || rows.length < 2) return []
 
   const header = rows[0]
-
   const dateColumns = []
   let foundDates = false
+
   for (let i = 4; i < header.length; i++) {
     const date = serialToDate(header[i])
     if (date) {
@@ -40,12 +41,9 @@ function parseSavingsSheet(rows) {
     }
   }
 
-  if (dateColumns.length === 0) return { savings: {}, trend: [] }
+  if (dateColumns.length === 0) return []
 
-  const lastDateIdx = dateColumns[dateColumns.length - 1].index
-
-  const savings = {}
-  let totalsRow = null
+  const snapshots = []
 
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r]
@@ -54,32 +52,76 @@ function parseSavingsSheet(rows) {
     const banco = row[1] ? String(row[1]).trim() : ''
     const etiqueta = row[2] ? String(row[2]).trim() : ''
 
-    if (!banco && !etiqueta) {
-      const valCount = dateColumns.filter(dc => dc.index < row.length && getVal(row, dc.index) !== 0).length
-      if (valCount > 3 && !totalsRow) {
-        totalsRow = row
-      }
-      continue
-    }
-
-    const value = getVal(row, lastDateIdx)
-    if (value === 0) continue
+    // Skip totals row
+    if (!banco && !etiqueta) continue
 
     const name = etiqueta ? `${banco} - ${etiqueta}` : banco
-    savings[name] = (savings[name] || 0) + value
-  }
+    if (!name || name === '-') continue
 
-  const trend = []
-  if (totalsRow) {
+    // Crear snapshot para cada fecha con saldo
     for (const dc of dateColumns) {
-      const total = getVal(totalsRow, dc.index)
-      if (total > 0) {
-        trend.push({ date: dc.date, total })
+      const saldo = getVal(row, dc.index)
+      if (saldo > 0) {
+        snapshots.push({
+          fecha: dc.date,
+          banco,
+          etiqueta,
+          saldo
+        })
       }
     }
   }
 
-  return { savings, trend }
+  return snapshots
+}
+
+// V1.1: Lee estructura vertical (una fila por snapshot)
+function parseSnapshotsFromV11(rows) {
+  if (!rows || rows.length < 2) return []
+
+  // Header: FECHA, BANCO, ETIQUETA, SALDO
+  return rows.slice(1)
+    .filter(row => row && row.length >= 4)
+    .map(row => ({
+      fecha: String(row[0]).slice(0, 10),
+      banco: String(row[1]).trim(),
+      etiqueta: String(row[2]).trim(),
+      saldo: getVal(row, 3)
+    }))
+    .filter(s => s.saldo > 0 && s.fecha && s.banco)
+}
+
+// Intentar ambas estructuras y devolver la que funciona
+async function loadSnapshots(accessToken, spreadsheetId) {
+  const ranges = ['SNAPSHOTS!A:D', 'SAVINGS!A:AM'].map(r => `ranges=${encodeURIComponent(r)}`).join('&')
+  const url = `${SHEETS_API}/${spreadsheetId}/values:batchGet?${ranges}&valueRenderOption=UNFORMATTED_VALUE`
+
+  const response = await axios.get(url, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  })
+
+  const valueRanges = response.data.valueRanges
+  let snapshots = []
+
+  // Intentar v1.1 primero (SNAPSHOTS)
+  if (valueRanges[0]?.values && valueRanges[0].values.length > 1) {
+    snapshots = parseSnapshotsFromV11(valueRanges[0].values)
+    if (snapshots.length > 0) {
+      console.log(`Loaded ${snapshots.length} snapshots from SNAPSHOTS (v1.1)`)
+      return snapshots
+    }
+  }
+
+  // Fallback a v1.0 (SAVINGS)
+  if (valueRanges[1]?.values && valueRanges[1].values.length > 1) {
+    snapshots = parseSnapshotsFromV1(valueRanges[1].values)
+    if (snapshots.length > 0) {
+      console.log(`Loaded ${snapshots.length} snapshots from SAVINGS (v1.0)`)
+      return snapshots
+    }
+  }
+
+  throw new Error('No se encontraron snapshots en SNAPSHOTS ni SAVINGS')
 }
 
 function parseCostsSheet(rows) {
@@ -122,21 +164,70 @@ function parseCostsSheet(rows) {
   return { expenses, monthlyExpense }
 }
 
-export async function fetchSheetData(accessToken, spreadsheetId) {
-  const ranges = ['SAVINGS', 'COSTS!A:E'].map(r => `ranges=${encodeURIComponent(r)}`).join('&')
-  const url = `${SHEETS_API}/${spreadsheetId}/values:batchGet?${ranges}&valueRenderOption=UNFORMATTED_VALUE`
+function parseMovementsSheet(rows) {
+  if (!rows || rows.length < 2) return []
 
-  const response = await axios.get(url, {
+  return rows.slice(1)
+    .filter(row => row && row.length >= 5 && row[0] && row[1])
+    .map(row => ({
+      fecha: String(row[0]).slice(0, 10),
+      banco: String(row[1]).trim(),
+      etiqueta: String(row[2]).trim(),
+      monto: getVal(row, 3),
+      tipo: String(row[4]).trim().toUpperCase()
+    }))
+    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+}
+
+export async function fetchSheetData(accessToken, spreadsheetId) {
+  const snapshots = await loadSnapshots(accessToken, spreadsheetId)
+
+  // Leer COSTS y MOVIMIENTOS
+  const rangesUrl = `${SHEETS_API}/${spreadsheetId}/values:batchGet?ranges=${encodeURIComponent('COSTS!A:E')}&ranges=${encodeURIComponent('MOVIMIENTOS!A:F')}&valueRenderOption=UNFORMATTED_VALUE`
+  const rangesResponse = await axios.get(rangesUrl, {
     headers: { Authorization: `Bearer ${accessToken}` }
   })
 
-  const valueRanges = response.data.valueRanges
-  if (!valueRanges || valueRanges.length < 2) {
-    throw new Error('El Google Sheet no tiene las hojas esperadas (SAVINGS, COSTS)')
+  const { expenses, monthlyExpense } = parseCostsSheet(
+    rangesResponse.data.valueRanges[0]?.values
+  )
+
+  const movements = parseMovementsSheet(
+    rangesResponse.data.valueRanges[1]?.values
+  )
+
+  // Reconstruir savings desde snapshots (última fecha)
+  const latestDate = snapshots.length > 0
+    ? snapshots.reduce((max, s) => s.fecha > max ? s.fecha : max, '')
+    : null
+
+  const savings = {}
+  const trend = {}
+
+  if (latestDate) {
+    // Savings: solo la última fecha
+    snapshots
+      .filter(s => s.fecha === latestDate)
+      .forEach(s => {
+        const key = s.etiqueta ? `${s.banco} - ${s.etiqueta}` : s.banco
+        savings[key] = s.saldo
+      })
+
+    // Trend: agregar por fecha (suma total)
+    snapshots.forEach(s => {
+      trend[s.fecha] = (trend[s.fecha] || 0) + s.saldo
+    })
   }
 
-  const { savings, trend } = parseSavingsSheet(valueRanges[0].values)
-  const { expenses, monthlyExpense } = parseCostsSheet(valueRanges[1].values)
+  const trendArray = Object.entries(trend)
+    .map(([date, total]) => ({ date, total: Math.round(total) }))
+    .sort((a, b) => a.date.localeCompare(b.date))
 
-  return { savings, expenses, monthlyExpense, trend }
+  return {
+    savings,
+    expenses,
+    monthlyExpense,
+    trend: trendArray,
+    movements
+  }
 }

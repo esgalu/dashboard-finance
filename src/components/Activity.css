@@ -1,0 +1,125 @@
+.activity-container {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.activity-container h3 {
+  color: #185FA5;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.activity-empty {
+  color: #999;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #fafafa;
+  border-radius: 8px;
+  border-left: 3px solid #185FA5;
+  transition: background 0.2s;
+}
+
+.activity-item:hover {
+  background: #f0f6ff;
+}
+
+.activity-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.activity-icon.deposit {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.activity-icon.withdrawal {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.activity-info {
+  min-width: 0;
+}
+
+.activity-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-date {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 0.25rem 0 0 0;
+}
+
+.activity-amount {
+  font-weight: 600;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  margin-left: 1rem;
+}
+
+.activity-amount.positive {
+  color: #2e7d32;
+}
+
+.activity-amount.negative {
+  color: #c62828;
+}
+
+@media (max-width: 768px) {
+  .activity-item {
+    padding: 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .activity-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  .activity-label {
+    font-size: 0.85rem;
+  }
+
+  .activity-amount {
+    font-size: 0.85rem;
+  }
+}

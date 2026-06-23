@@ -10,6 +10,7 @@ export function useDashboardData() {
     const savingsData = rawData.savings
     const expensesByCategory = rawData.expenses
     const trendData = rawData.trend
+    const movements = rawData.movements || []
 
     const totalPatrimony = Object.values(savingsData).reduce((a, b) => a + b, 0)
     const investmentValue = Object.entries(savingsData)
@@ -51,7 +52,8 @@ export function useDashboardData() {
         monthly: rawData.monthlyExpense
       },
       trend: trendData,
-      accounts: accountsProcessed
+      accounts: accountsProcessed,
+      movements
     }
   }, [rawData])
 
