@@ -1,7 +1,8 @@
+import { formatDateShort, formatCurrency } from '../utils/formatters'
 import './Activity.css'
 
 export default function Activity({ movements }) {
-  if (!movements || movements.length === 0) {
+  if (!movements || !Array.isArray(movements) || movements.length === 0) {
     return (
       <div className="activity-container">
         <h3>Actividad Reciente</h3>
@@ -17,13 +18,10 @@ export default function Activity({ movements }) {
       <h3>Actividad Reciente</h3>
       <div className="activity-list">
         {recentMovements.map((mov, idx) => {
+          if (!mov || !mov.tipo || !mov.monto) return null
+
           const isDeposit = mov.tipo === 'DEPOSITO'
           const label = mov.etiqueta ? `${mov.banco} - ${mov.etiqueta}` : mov.banco
-          const displayMonto = new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            maximumFractionDigits: 0
-          }).format(mov.monto)
 
           return (
             <div key={idx} className="activity-item">
@@ -33,11 +31,11 @@ export default function Activity({ movements }) {
                 </div>
                 <div className="activity-info">
                   <p className="activity-label">{label}</p>
-                  <p className="activity-date">{mov.fecha}</p>
+                  <p className="activity-date">{formatDateShort(mov.fecha) || mov.fecha}</p>
                 </div>
               </div>
               <div className={`activity-amount ${isDeposit ? 'positive' : 'negative'}`}>
-                {isDeposit ? '+' : '-'}{displayMonto}
+                {isDeposit ? '+' : '-'}{formatCurrency(mov.monto)}
               </div>
             </div>
           )
@@ -46,3 +44,4 @@ export default function Activity({ movements }) {
     </div>
   )
 }
+

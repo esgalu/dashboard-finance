@@ -24,6 +24,19 @@
   color: #333;
 }
 
+.trends-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.trends-subtitle {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
 .chart-container {
   position: relative;
   height: 300px;
@@ -46,6 +59,10 @@
     font-size: 14px;
   }
 
+  .trends-header {
+    flex-direction: column;
+  }
+
   .chart-container {
     height: 250px;
   }
@@ -54,3 +71,4 @@
     height: 300px;
   }
 }
+
