@@ -4,6 +4,7 @@ export default function NavTabs({ activeTab, onTabChange }) {
   const tabs = [
     { id: 'overview', label: 'Visión General' },
     { id: 'trends', label: 'Tendencias' },
+    { id: 'cashflow', label: 'Flujo' },
     { id: 'accounts', label: 'Cuentas' }
   ]
 

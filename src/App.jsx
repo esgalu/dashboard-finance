@@ -3,17 +3,18 @@ import KPICards from './components/KPICards'
 import NavTabs from './components/NavTabs'
 import Overview from './components/tabs/Overview'
 import Trends from './components/tabs/Trends'
+import CashFlow from './components/tabs/CashFlow'
 import Accounts from './components/tabs/Accounts'
 import AuthStatus from './components/AuthStatus'
 import LoadingOverlay from './components/LoadingOverlay'
 import ErrorBanner from './components/ErrorBanner'
-import Activity from './components/Activity'
+import TopExpenses from './components/TopExpenses'
 import { useDashboardData } from './hooks/useDashboardData'
 import './styles/App.css'
 
 function App() {
   const [activeTab, setActiveTab] = useState('overview')
-  const { kpis, expenses, trend, accounts, movements, accountTimeSeries, isLoading, error, dataSource, refreshData } = useDashboardData()
+  const { kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, accounts, movements, accountTimeSeries, isLoading, error, dataSource, refreshData } = useDashboardData()
 
   return (
     <div className="app-container">
@@ -42,11 +43,12 @@ function App() {
 
             <div className="tab-container">
               {activeTab === 'overview' && <Overview expenses={expenses} />}
-              {activeTab === 'trends' && <Trends trend={trend} />}
+              {activeTab === 'trends' && <Trends trend={trend} projectedTrend={projectedTrend} />}
+              {activeTab === 'cashflow' && <CashFlow cashFlow={cashFlow} />}
               {activeTab === 'accounts' && <Accounts accounts={accounts} total={kpis.patrimony} accountTimeSeries={accountTimeSeries} />}
             </div>
 
-            <Activity movements={movements} />
+            <TopExpenses topExpenses={topExpenses} />
           </>
         )}
 

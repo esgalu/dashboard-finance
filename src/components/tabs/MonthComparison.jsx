@@ -56,7 +56,7 @@ export default function MonthComparison({ expenses }) {
         {totalChange > 0 ? ' más' : ' menos'} en {formatMonth(monthB)} vs {formatMonth(monthA)}
       </div>
 
-      <div className="chart-container">
+      <div className="chart-container tall">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 30, left: 80, bottom: 10 }}>
             <CartesianGrid strokeDasharray="3 3" />

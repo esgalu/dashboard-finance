@@ -59,10 +59,22 @@
   color: #185FA5;
 }
 
-.account-pct {
-  font-size: 11px;
+.account-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  gap: 4px;
+}
+
+.account-share {
+  font-size: 10px;
   color: #aaa;
-  margin-top: 4px;
+}
+
+.account-return {
+  font-size: 11px;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {

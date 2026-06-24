@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts'
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Legend } from 'recharts'
 import { formatMonth, formatCurrency, formatShortCurrency, calculateChange } from '../../utils/formatters'
 import MonthComparison from './MonthComparison'
 import '../tabs/Overview.css'
@@ -50,16 +50,16 @@ export default function Overview({ expenses }) {
             ))}
           </div>
         </div>
-        <div className="chart-container">
+        <div className="chart-container tall">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={pieChartData}
                 cx="50%"
                 cy="50%"
-                labelLine={false}
+                labelLine={true}
                 label={(entry) => `${entry.name} ${entry.pct}%`}
-                outerRadius={80}
+                outerRadius={120}
                 fill="#8884d8"
                 dataKey="value"
               >
@@ -75,27 +75,42 @@ export default function Overview({ expenses }) {
 
       <div className="section">
         <div className="section-header">
-          <h2>Gasto Mensual</h2>
+          <h2>Gasto Mensual por Categoría</h2>
           {monthVariation !== 0 && (
             <span className="variation-badge" style={{ color: variationColor }}>
               {monthVariation > 0 ? '↑' : '↓'} {Math.abs(monthVariation).toFixed(1)}%
             </span>
           )}
         </div>
-        <div className="chart-container">
+        <div className="chart-container tall">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={expenses.monthly} margin={{ top: 30, right: 30, left: 20, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" tickFormatter={(month) => formatMonth(month)} />
-              <YAxis tickFormatter={formatShortCurrency} />
-              <Tooltip
-                formatter={(value) => formatCurrency(value)}
-                labelFormatter={(month) => formatMonth(month)}
-              />
-              <Bar dataKey="total" fill="#185FA5" radius={[8, 8, 0, 0]}>
-                <LabelList dataKey="total" position="top" formatter={formatShortCurrency} style={{ fontSize: 11, fill: '#333' }} />
-              </Bar>
-            </BarChart>
+            {(() => {
+              const colors = ['#185FA5', '#0C447C', '#378ADD', '#85B7EB', '#B5D4F4', '#999', '#666', '#444', '#BBB', '#DDD', '#EEE']
+              const allCategories = new Set()
+              const stackedData = expenses.monthly.map(m => {
+                const cats = expenses.categoriesByMonth?.[m.month] || []
+                const row = { month: m.month }
+                cats.forEach(c => {
+                  row[c.name] = c.value
+                  allCategories.add(c.name)
+                })
+                return row
+              })
+              const categoryList = Array.from(allCategories)
+
+              return (
+                <BarChart data={stackedData} margin={{ top: 30, right: 30, left: 20, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" tickFormatter={formatMonth} />
+                  <YAxis tickFormatter={formatShortCurrency} />
+                  <Tooltip formatter={(value) => formatCurrency(value)} labelFormatter={formatMonth} />
+                  <Legend />
+                  {categoryList.map((cat, idx) => (
+                    <Bar key={cat} dataKey={cat} stackId="expenses" fill={colors[idx % colors.length]} />
+                  ))}
+                </BarChart>
+              )
+            })()}
           </ResponsiveContainer>
         </div>
       </div>

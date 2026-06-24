@@ -1,4 +1,4 @@
-import { formatCurrency } from '../../utils/formatters'
+import { formatCurrency, getTrendColor } from '../../utils/formatters'
 import AccountsEvolution from './AccountsEvolution'
 import '../tabs/Accounts.css'
 
@@ -24,11 +24,21 @@ export default function Accounts({ accounts, total, accountTimeSeries }) {
           {accounts.map((account, idx) => {
             if (!account || typeof account.value !== 'number' || account.value <= 0) return null
 
+            const hasReturn = account.percentage !== 0
+            const returnColor = getTrendColor(account.percentage)
+
             return (
               <div key={idx} className="account-card">
                 <p className="account-name">{account.name || 'Sin nombre'}</p>
                 <p className="account-value">{formatCurrency(account.value)}</p>
-                <p className="account-pct">{(account.percentage || 0).toFixed(1)}%</p>
+                <div className="account-meta">
+                  <span className="account-share">{(account.share || 0).toFixed(1)}% del total</span>
+                  {hasReturn && (
+                    <span className="account-return" style={{ color: returnColor }}>
+                      {account.percentage > 0 ? '↑' : '↓'} {Math.abs(account.percentage).toFixed(1)}%
+                    </span>
+                  )}
+                </div>
               </div>
             )
           })}

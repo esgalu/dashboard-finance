@@ -130,6 +130,7 @@ function parseCostsSheet(rows) {
   const categoryTotals = {}
   const monthlyTotals = {}
   const expensesByMonth = {}
+  const allTransactions = []
   let grandTotal = 0
 
   for (let r = 1; r < rows.length; r++) {
@@ -138,6 +139,7 @@ function parseCostsSheet(rows) {
 
     const yearMonth = row[1] ? String(row[1]).trim() : ''
     const clasificacion = row[2] ? String(row[2]).trim() : ''
+    const categoria = row[3] ? String(row[3]).trim() : ''
     const costo = getVal(row, 4)
 
     if (!clasificacion || costo <= 0) continue
@@ -145,10 +147,11 @@ function parseCostsSheet(rows) {
     categoryTotals[clasificacion] = (categoryTotals[clasificacion] || 0) + costo
     grandTotal += costo
 
+    allTransactions.push({ yearMonth, clasificacion, categoria, costo })
+
     if (yearMonth) {
       monthlyTotals[yearMonth] = (monthlyTotals[yearMonth] || 0) + costo
 
-      // Agregar a expensesByMonth
       if (!expensesByMonth[yearMonth]) {
         expensesByMonth[yearMonth] = {}
       }
@@ -181,13 +184,16 @@ function parseCostsSheet(rows) {
       .sort((a, b) => b.value - a.value)
   })
 
-  return { expenses, monthlyExpense, expensesByMonth: expensesByMonthProcessed }
+  const topExpenses = allTransactions
+    .sort((a, b) => b.costo - a.costo)
+
+  return { expenses, monthlyExpense, expensesByMonth: expensesByMonthProcessed, topExpenses }
 }
 
 function parseMovementsSheet(rows) {
-  if (!rows || rows.length < 2) return []
+  if (!rows || rows.length < 2) return { movements: [], depositsByMonth: {} }
 
-  return rows.slice(1)
+  const movements = rows.slice(1)
     .filter(row => row && row.length >= 5 && row[0] && row[1])
     .map(row => ({
       fecha: serialToDate(row[0]),
@@ -198,66 +204,130 @@ function parseMovementsSheet(rows) {
     }))
     .filter(m => m.fecha)
     .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+
+  const depositsByMonth = {}
+  movements.forEach(m => {
+    if (m.tipo === 'DEPOSITO' && m.monto > 0) {
+      const month = m.fecha.slice(0, 7)
+      depositsByMonth[month] = (depositsByMonth[month] || 0) + m.monto
+    }
+  })
+
+  return { movements, depositsByMonth }
+}
+
+function parseIncomeSheet(rows) {
+  if (!rows || rows.length < 2) return { incomeByMonth: {} }
+
+  const incomeByMonth = {}
+  rows.slice(1).forEach(row => {
+    if (!row || row.length < 3) return
+    const fecha = serialToDate(row[0])
+    if (!fecha) return
+    const month = fecha.slice(0, 7)
+    const monto = getVal(row, 2)
+    if (monto > 0) {
+      incomeByMonth[month] = (incomeByMonth[month] || 0) + monto
+    }
+  })
+
+  return { incomeByMonth }
 }
 
 export async function fetchSheetData(accessToken, spreadsheetId) {
   const snapshots = await loadSnapshots(accessToken, spreadsheetId)
 
-  // Leer COSTS y MOVIMIENTOS
-  const rangesUrl = `${SHEETS_API}/${spreadsheetId}/values:batchGet?ranges=${encodeURIComponent('COSTS!A:E')}&ranges=${encodeURIComponent('MOVIMIENTOS!A:F')}&valueRenderOption=UNFORMATTED_VALUE`
-  const rangesResponse = await axios.get(rangesUrl, {
+  // Leer COSTS
+  const costsUrl = `${SHEETS_API}/${spreadsheetId}/values/${encodeURIComponent('COSTS!A:E')}?valueRenderOption=UNFORMATTED_VALUE`
+  const costsResponse = await axios.get(costsUrl, {
     headers: { Authorization: `Bearer ${accessToken}` }
   })
 
-  const { expenses, monthlyExpense, expensesByMonth } = parseCostsSheet(
-    rangesResponse.data.valueRanges[0]?.values
+  const { expenses, monthlyExpense, expensesByMonth, topExpenses } = parseCostsSheet(
+    costsResponse.data.values
   )
 
-  const movements = parseMovementsSheet(
-    rangesResponse.data.valueRanges[1]?.values
-  )
+  // Leer MOVIMIENTOS (opcional)
+  let movements = []
+  let depositsByMonth = {}
+  try {
+    const movUrl = `${SHEETS_API}/${spreadsheetId}/values/${encodeURIComponent('MOVIMIENTOS!A:F')}?valueRenderOption=UNFORMATTED_VALUE`
+    const movResponse = await axios.get(movUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    })
+    const parsed = parseMovementsSheet(movResponse.data.values)
+    movements = parsed.movements
+    depositsByMonth = parsed.depositsByMonth
+  } catch {
+    // MOVIMIENTOS no existe
+  }
 
-  // Reconstruir savings desde snapshots (última fecha)
-  const latestDate = snapshots.length > 0
-    ? snapshots.reduce((max, s) => s.fecha > max ? s.fecha : max, '')
+  // Leer INGRESOS (opcional)
+  let incomeByMonth = {}
+  try {
+    const incUrl = `${SHEETS_API}/${spreadsheetId}/values/${encodeURIComponent('INGRESOS!A:D')}?valueRenderOption=UNFORMATTED_VALUE`
+    const incResponse = await axios.get(incUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    })
+    incomeByMonth = parseIncomeSheet(incResponse.data.values).incomeByMonth
+  } catch {
+    // INGRESOS no existe
+  }
+
+  // Contar cuentas por fecha para detectar snapshots incompletos
+  const accountsByDate = {}
+  snapshots.forEach(s => {
+    if (!accountsByDate[s.fecha]) accountsByDate[s.fecha] = 0
+    accountsByDate[s.fecha]++
+  })
+
+  // El numero esperado de cuentas es el maximo encontrado
+  const expectedAccounts = Math.max(...Object.values(accountsByDate), 0)
+  const minAccounts = Math.floor(expectedAccounts * 0.7)
+
+  // Filtrar fechas con datos incompletos (menos del 70% de cuentas esperadas)
+  const completeDates = new Set(
+    Object.entries(accountsByDate)
+      .filter(([_, count]) => count >= minAccounts)
+      .map(([date]) => date)
+  )
+  const completeSnapshots = snapshots.filter(s => completeDates.has(s.fecha))
+
+  // Reconstruir savings desde la ultima fecha COMPLETA
+  const latestDate = completeSnapshots.length > 0
+    ? completeSnapshots.reduce((max, s) => s.fecha > max ? s.fecha : max, '')
     : null
 
   const savings = {}
   const trend = {}
 
   if (latestDate) {
-    // Savings: solo la última fecha
-    snapshots
+    completeSnapshots
       .filter(s => s.fecha === latestDate)
       .forEach(s => {
         const key = s.etiqueta ? `${s.banco} - ${s.etiqueta}` : s.banco
         savings[key] = s.saldo
       })
 
-    // Trend: agregar por fecha (suma total)
-    snapshots.forEach(s => {
+    completeSnapshots.forEach(s => {
       trend[s.fecha] = (trend[s.fecha] || 0) + s.saldo
     })
   }
 
-  // Filtrar fechas con datos incompletos:
-  // si el total cae mas de 40% respecto al punto anterior, es un snapshot incompleto
   const trendArray = Object.entries(trend)
     .map(([date, total]) => ({ date, total: Math.round(total) }))
     .sort((a, b) => a.date.localeCompare(b.date))
-    .filter((point, i, arr) => {
-      if (i === 0) return true
-      const prev = arr[i - 1].total
-      return point.total > prev * 0.6
-    })
 
   return {
     savings,
     expenses,
     monthlyExpense,
     expensesByMonth,
+    topExpenses,
+    depositsByMonth,
+    incomeByMonth,
     trend: trendArray,
     movements,
-    snapshots
+    snapshots: completeSnapshots
   }
 }

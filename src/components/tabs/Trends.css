@@ -37,6 +37,11 @@
   margin-top: 0.5rem;
 }
 
+.trends-projection-label {
+  color: #85B7EB;
+  font-size: 0.85em;
+}
+
 .chart-container {
   position: relative;
   height: 300px;

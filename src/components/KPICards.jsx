@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { formatCurrency, formatShortCurrency, getTrendIndicator, getTrendColor } from '../utils/formatters'
 import './KPICards.css'
 
@@ -6,35 +7,48 @@ export default function KPICards({ kpis }) {
     {
       label: 'Patrimonio Total',
       value: formatShortCurrency(kpis.patrimony),
-      subtitle: formatCurrency(kpis.patrimony)
+      subtitle: formatCurrency(kpis.patrimony),
+      info: 'Suma de todas las cuentas de ahorro e inversión en el último snapshot completo.'
     },
     {
       label: 'Ahorros Disponibles',
       value: formatShortCurrency(kpis.savings),
-      subtitle: formatCurrency(kpis.savings)
+      subtitle: formatCurrency(kpis.savings),
+      info: 'Patrimonio Total menos Inversiones. Dinero disponible sin tocar inversiones.'
     },
     {
       label: 'Inversiones',
       value: formatShortCurrency(kpis.investments),
-      subtitle: formatCurrency(kpis.investments)
+      subtitle: formatCurrency(kpis.investments),
+      info: 'Suma de cuentas TRI (trii) + DOLARES.'
     },
     {
       label: 'Meses de Runway',
       value: kpis.runway,
-      subtitle: null
+      subtitle: null,
+      info: 'Ahorros Disponibles ÷ promedio de gasto mensual. Cuántos meses puedes vivir sin ingresos.'
     },
     {
       label: 'Gasto Este Mes',
       value: formatShortCurrency(kpis.currentMonthExpense),
       subtitle: formatCurrency(kpis.currentMonthExpense),
       change: kpis.expenseChange,
-      invertColor: true
+      invertColor: true,
+      info: 'Total de gastos del último mes registrado en COSTS.'
     },
     {
       label: 'Cambio Patrimonial',
       value: `${kpis.patrimonyChange > 0 ? '+' : ''}${kpis.patrimonyChange?.toFixed(1) || 0}%`,
       subtitle: null,
-      change: kpis.patrimonyChange
+      change: kpis.patrimonyChange,
+      info: 'Variación % entre los últimos 2 snapshots de patrimonio.'
+    },
+    {
+      label: 'Tasa de Ahorro',
+      value: `${kpis.savingsRate > 0 ? '+' : ''}${kpis.savingsRate?.toFixed(1) || 0}%`,
+      subtitle: null,
+      change: kpis.savingsRate,
+      info: '(Ingresos − Gastos) ÷ Ingresos del último mes. Qué % de tu ingreso estás ahorrando.'
     }
   ]
 
@@ -48,18 +62,36 @@ export default function KPICards({ kpis }) {
           : getTrendColor(changeVal)
 
         return (
-          <div key={idx} className="kpi-card">
-            <p className="kpi-label">{card.label}</p>
-            <p className="kpi-value">{card.value}</p>
-            {card.subtitle && <p className="kpi-subtitle">{card.subtitle}</p>}
-            {hasChange && (
-              <p className="kpi-change" style={{ color: changeColor }}>
-                {getTrendIndicator(card.invertColor ? -changeVal : changeVal)} {Math.abs(changeVal).toFixed(1)}% vs mes ant.
-              </p>
-            )}
-          </div>
+          <KPICard key={idx} card={card} hasChange={hasChange} changeVal={changeVal} changeColor={changeColor} />
         )
       })}
+    </div>
+  )
+}
+
+function KPICard({ card, hasChange, changeVal, changeColor }) {
+  const [showInfo, setShowInfo] = useState(false)
+
+  return (
+    <div className="kpi-card">
+      <button
+        className="kpi-info-btn"
+        onClick={() => setShowInfo(!showInfo)}
+        title={card.info}
+      >
+        i
+      </button>
+      <p className="kpi-label">{card.label}</p>
+      <p className="kpi-value">{card.value}</p>
+      {card.subtitle && <p className="kpi-subtitle">{card.subtitle}</p>}
+      {hasChange && (
+        <p className="kpi-change" style={{ color: changeColor }}>
+          {getTrendIndicator(card.invertColor ? -changeVal : changeVal)} {Math.abs(changeVal).toFixed(1)}% vs mes ant.
+        </p>
+      )}
+      {showInfo && (
+        <div className="kpi-info-tooltip">{card.info}</div>
+      )}
     </div>
   )
 }

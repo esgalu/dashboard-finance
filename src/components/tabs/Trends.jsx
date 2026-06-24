@@ -1,8 +1,8 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { formatDateShort, formatCurrency, calculateChange } from '../../utils/formatters'
+import { formatDateShort, formatCurrency, formatShortCurrency, calculateChange } from '../../utils/formatters'
 import '../tabs/Trends.css'
 
-export default function Trends({ trend }) {
+export default function Trends({ trend, projectedTrend }) {
   if (!trend || !Array.isArray(trend) || trend.length === 0) {
     return (
       <div className="tab-content">
@@ -14,26 +14,24 @@ export default function Trends({ trend }) {
     )
   }
 
-  // Validar que los datos tengan la estructura correcta
   const validTrend = trend.filter(item => item.date && typeof item.total === 'number')
+  if (validTrend.length === 0) return null
 
-  if (validTrend.length === 0) {
-    return (
-      <div className="tab-content">
-        <div className="section">
-          <h2>Evolución del Patrimonio</h2>
-          <p style={{ color: '#999', textAlign: 'center', padding: '2rem' }}>Datos no válidos</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Calcular cambio % desde primer snapshot
   const firstValue = validTrend[0]?.total || 0
   const lastValue = validTrend[validTrend.length - 1]?.total || 0
   const changePercent = calculateChange(lastValue, firstValue)
   const trendDirection = changePercent > 0 ? '↑' : '↓'
   const trendColor = changePercent > 0 ? '#2e7d32' : '#c62828'
+
+  // Combinar datos reales + proyeccion
+  const chartData = [
+    ...validTrend.map(d => ({ date: d.date, total: d.total, projected: null })),
+    ...(projectedTrend || []).map(d => ({ date: d.date, total: d.total || null, projected: d.projected }))
+  ]
+
+  const projectedEnd = projectedTrend && projectedTrend.length > 0
+    ? projectedTrend[projectedTrend.length - 1].projected
+    : null
 
   return (
     <div className="tab-content">
@@ -46,27 +44,35 @@ export default function Trends({ trend }) {
                 {trendDirection} {Math.abs(changePercent).toFixed(1)}%
               </span>
               {' '}desde {formatDateShort(validTrend[0]?.date)}
+              {projectedEnd && (
+                <span className="trends-projection-label">
+                  {' · '}Proyección 3 meses: {formatCurrency(projectedEnd)}
+                </span>
+              )}
             </p>
           </div>
         </div>
 
         <div className="chart-container tall">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={validTrend} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 12 }}
                 tickFormatter={(date) => formatDateShort(date)}
-                interval={Math.floor(validTrend.length / 6)}
+                interval={Math.floor(chartData.length / 6)}
               />
               <YAxis
                 tick={{ fontSize: 12 }}
-                tickFormatter={(value) => `$${Math.round(value / 1000000)}M`}
+                tickFormatter={formatShortCurrency}
               />
               <Tooltip
-                formatter={(value) => formatCurrency(value)}
-                labelFormatter={(date) => `Fecha: ${date}`}
+                formatter={(value, name) => [
+                  formatCurrency(value),
+                  name === 'projected' ? 'Proyectado' : 'Patrimonio Real'
+                ]}
+                labelFormatter={(date) => formatDateShort(date)}
                 contentStyle={{
                   backgroundColor: '#fff',
                   border: '1px solid #ddd',
@@ -74,7 +80,7 @@ export default function Trends({ trend }) {
                   padding: '10px'
                 }}
               />
-              <Legend />
+              <Legend formatter={(value) => value === 'projected' ? 'Proyectado' : 'Patrimonio Real'} />
               <Line
                 type="monotone"
                 dataKey="total"
@@ -82,7 +88,18 @@ export default function Trends({ trend }) {
                 strokeWidth={3}
                 dot={{ fill: '#185FA5', r: 4 }}
                 activeDot={{ r: 6 }}
-                name="Patrimonio Total"
+                name="total"
+                connectNulls={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="projected"
+                stroke="#85B7EB"
+                strokeWidth={2}
+                strokeDasharray="6 4"
+                dot={false}
+                name="projected"
+                connectNulls
               />
             </LineChart>
           </ResponsiveContainer>
@@ -91,4 +108,3 @@ export default function Trends({ trend }) {
     </div>
   )
 }
-
