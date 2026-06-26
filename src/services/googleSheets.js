@@ -130,6 +130,7 @@ function parseCostsSheet(rows) {
   const categoryTotals = {}
   const monthlyTotals = {}
   const expensesByMonth = {}
+  const detailByMonth = {}
   const allTransactions = []
   let grandTotal = 0
 
@@ -156,6 +157,13 @@ function parseCostsSheet(rows) {
         expensesByMonth[yearMonth] = {}
       }
       expensesByMonth[yearMonth][clasificacion] = (expensesByMonth[yearMonth][clasificacion] || 0) + costo
+
+      // Detalle por subcategoria dentro de cada clasificacion por mes
+      const detailKey = `${yearMonth}|${clasificacion}`
+      if (!detailByMonth[detailKey]) {
+        detailByMonth[detailKey] = {}
+      }
+      detailByMonth[detailKey][categoria] = (detailByMonth[detailKey][categoria] || 0) + costo
     }
   }
 
@@ -187,7 +195,18 @@ function parseCostsSheet(rows) {
   const topExpenses = allTransactions
     .sort((a, b) => b.costo - a.costo)
 
-  return { expenses, monthlyExpense, expensesByMonth: expensesByMonthProcessed, topExpenses }
+  // Procesar detalle: { "2026-05|HOGAR": { "Arriendo": 4200000, "Servicios EPM": 391200 } }
+  // -> { "2026-05": { "HOGAR": [{ name: "Arriendo", value: 4200000 }, ...] } }
+  const detailProcessed = {}
+  Object.entries(detailByMonth).forEach(([key, subcats]) => {
+    const [month, clasificacion] = key.split('|')
+    if (!detailProcessed[month]) detailProcessed[month] = {}
+    detailProcessed[month][clasificacion] = Object.entries(subcats)
+      .map(([name, value]) => ({ name, value: Math.round(value) }))
+      .sort((a, b) => b.value - a.value)
+  })
+
+  return { expenses, monthlyExpense, expensesByMonth: expensesByMonthProcessed, topExpenses, expenseDetail: detailProcessed }
 }
 
 function parseMovementsSheet(rows) {
@@ -234,6 +253,19 @@ function parseIncomeSheet(rows) {
   return { incomeByMonth }
 }
 
+function parseBudgetSheet(rows) {
+  if (!rows || rows.length < 2) return []
+
+  return rows.slice(1)
+    .filter(row => row && row.length >= 3 && row[0])
+    .map(row => ({
+      categoria: String(row[0]).trim(),
+      presupuesto: getVal(row, 1),
+      tipo: row[2] ? String(row[2]).trim() : 'Variable'
+    }))
+    .filter(b => b.presupuesto > 0)
+}
+
 export async function fetchSheetData(accessToken, spreadsheetId) {
   const snapshots = await loadSnapshots(accessToken, spreadsheetId)
 
@@ -243,7 +275,7 @@ export async function fetchSheetData(accessToken, spreadsheetId) {
     headers: { Authorization: `Bearer ${accessToken}` }
   })
 
-  const { expenses, monthlyExpense, expensesByMonth, topExpenses } = parseCostsSheet(
+  const { expenses, monthlyExpense, expensesByMonth, topExpenses, expenseDetail } = parseCostsSheet(
     costsResponse.data.values
   )
 
@@ -272,6 +304,18 @@ export async function fetchSheetData(accessToken, spreadsheetId) {
     incomeByMonth = parseIncomeSheet(incResponse.data.values).incomeByMonth
   } catch {
     // INGRESOS no existe
+  }
+
+  // Leer PRESUPUESTO (opcional)
+  let budget = []
+  try {
+    const budgetUrl = `${SHEETS_API}/${spreadsheetId}/values/${encodeURIComponent('PRESUPUESTO!A:C')}?valueRenderOption=UNFORMATTED_VALUE`
+    const budgetResponse = await axios.get(budgetUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    })
+    budget = parseBudgetSheet(budgetResponse.data.values)
+  } catch {
+    // PRESUPUESTO no existe
   }
 
   // Contar cuentas por fecha para detectar snapshots incompletos
@@ -323,9 +367,11 @@ export async function fetchSheetData(accessToken, spreadsheetId) {
     expenses,
     monthlyExpense,
     expensesByMonth,
+    expenseDetail,
     topExpenses,
     depositsByMonth,
     incomeByMonth,
+    budget,
     trend: trendArray,
     movements,
     snapshots: completeSnapshots

@@ -3,9 +3,10 @@ import './NavTabs.css'
 export default function NavTabs({ activeTab, onTabChange }) {
   const tabs = [
     { id: 'overview', label: 'Visión General' },
-    { id: 'trends', label: 'Tendencias' },
+    { id: 'budget', label: 'Presupuesto' },
     { id: 'cashflow', label: 'Flujo' },
-    { id: 'accounts', label: 'Cuentas' }
+    { id: 'accounts', label: 'Cuentas' },
+    { id: 'trends', label: 'Tendencias' }
   ]
 
   return (

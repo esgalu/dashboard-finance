@@ -80,6 +80,43 @@
   font-size: 0.8rem;
 }
 
+.comparison-expandable {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.comparison-expandable:hover {
+  background: #f0f6ff;
+}
+
+.comparison-expandable.expanded {
+  background: #f5f8ff;
+  font-weight: 600;
+}
+
+.comp-arrow {
+  font-size: 9px;
+  margin-right: 6px;
+  color: #999;
+}
+
+.comparison-subrow {
+  background: #fafafa;
+  padding-left: 1.5rem;
+  font-size: 0.75rem;
+  color: #666;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.comp-subname {
+  font-style: italic;
+}
+
+.comp-subval {
+  font-size: 0.73rem;
+  color: #888;
+}
+
 @media (max-width: 768px) {
   .comparison-row {
     grid-template-columns: 1.5fr 1fr 1fr 0.8fr;

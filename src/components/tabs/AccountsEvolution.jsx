@@ -1,19 +1,11 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { formatDateShort, formatCurrency } from '../../utils/formatters'
+import { formatDateShort, formatCurrency, formatShortCurrency } from '../../utils/formatters'
 import './AccountsEvolution.css'
 
 const ACCOUNT_COLORS = [
-  '#185FA5',
-  '#0C447C',
-  '#378ADD',
-  '#2e7d32',
-  '#c62828',
-  '#f57c00',
-  '#7b1fa2',
-  '#00796b',
-  '#512da8',
-  '#e91e63'
+  '#185FA5', '#0C447C', '#378ADD', '#6B8E23', '#c62828',
+  '#f57c00', '#7b1fa2', '#00796b', '#512da8', '#e91e63'
 ]
 
 export default function AccountsEvolution({ accounts, trend }) {
@@ -30,21 +22,51 @@ export default function AccountsEvolution({ accounts, trend }) {
     )
   }
 
-  const [selectedAccounts, setSelectedAccounts] = useState(accounts.map(a => a.name))
+  const accountsByBank = useMemo(() => {
+    const map = {}
+    accounts.forEach(a => {
+      const parts = a.name.split(' - ')
+      const banco = parts[0] || a.name
+      const etiqueta = parts.slice(1).join(' - ') || null
+      if (!map[banco]) map[banco] = []
+      map[banco].push({ ...a, banco, etiqueta })
+    })
+    return map
+  }, [accounts])
 
-  const handleAccountToggle = (accountName) => {
-    setSelectedAccounts(prev =>
-      prev.includes(accountName)
-        ? prev.filter(name => name !== accountName)
-        : [...prev, accountName]
+  const bancos = Object.keys(accountsByBank).sort()
+  const [selectedBanco, setSelectedBanco] = useState('todos')
+  const [selectedEtiquetas, setSelectedEtiquetas] = useState(accounts.map(a => a.name))
+
+  const visibleEtiquetas = useMemo(() => {
+    if (selectedBanco === 'todos') return accounts
+    return accountsByBank[selectedBanco] || []
+  }, [selectedBanco, accounts, accountsByBank])
+
+  const handleBancoChange = (banco) => {
+    setSelectedBanco(banco)
+    if (banco === 'todos') {
+      setSelectedEtiquetas(accounts.map(a => a.name))
+    } else {
+      setSelectedEtiquetas((accountsByBank[banco] || []).map(a => a.name))
+    }
+  }
+
+  const handleEtiquetaToggle = (name) => {
+    setSelectedEtiquetas(prev =>
+      prev.includes(name)
+        ? prev.filter(n => n !== name)
+        : [...prev, name]
     )
   }
 
   const handleSelectAll = () => {
-    if (selectedAccounts.length === accounts.length) {
-      setSelectedAccounts([])
+    const visible = visibleEtiquetas.map(a => a.name)
+    const allSelected = visible.every(n => selectedEtiquetas.includes(n))
+    if (allSelected) {
+      setSelectedEtiquetas(prev => prev.filter(n => !visible.includes(n)))
     } else {
-      setSelectedAccounts(accounts.map(a => a.name))
+      setSelectedEtiquetas(prev => [...new Set([...prev, ...visible])])
     }
   }
 
@@ -54,34 +76,50 @@ export default function AccountsEvolution({ accounts, trend }) {
         <h2>Evolución de Cuentas</h2>
 
         <div className="account-filter">
-          <button
-            className="select-all-btn"
-            onClick={handleSelectAll}
-          >
-            {selectedAccounts.length === accounts.length ? 'Deseleccionar todas' : 'Seleccionar todas'}
-          </button>
+          <div className="filter-row">
+            <div className="filter-group">
+              <label className="filter-label">Banco</label>
+              <select
+                className="filter-select"
+                value={selectedBanco}
+                onChange={e => handleBancoChange(e.target.value)}
+              >
+                <option value="todos">Todos los bancos</option>
+                {bancos.map(b => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+            </div>
+
+            <button className="select-all-btn" onClick={handleSelectAll}>
+              {visibleEtiquetas.every(a => selectedEtiquetas.includes(a.name))
+                ? 'Deseleccionar todas'
+                : 'Seleccionar todas'}
+            </button>
+          </div>
+
           <div className="account-checkboxes">
-            {accounts.map((account, idx) => (
+            {visibleEtiquetas.map((account, idx) => (
               <label key={account.name} className="account-checkbox">
                 <input
                   type="checkbox"
-                  checked={selectedAccounts.includes(account.name)}
-                  onChange={() => handleAccountToggle(account.name)}
+                  checked={selectedEtiquetas.includes(account.name)}
+                  onChange={() => handleEtiquetaToggle(account.name)}
                 />
                 <span
                   className="checkbox-color"
-                  style={{ backgroundColor: ACCOUNT_COLORS[idx % ACCOUNT_COLORS.length] }}
+                  style={{ backgroundColor: ACCOUNT_COLORS[accounts.indexOf(account) % ACCOUNT_COLORS.length] }}
                 />
-                <span className="checkbox-label">{account.name}</span>
+                <span className="checkbox-label">{account.etiqueta || account.name}</span>
               </label>
             ))}
           </div>
         </div>
 
-        {selectedAccounts.length > 0 ? (
+        {selectedEtiquetas.length > 0 ? (
           <div className="chart-container tall">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trend} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+              <LineChart data={trend} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="date"
@@ -91,11 +129,11 @@ export default function AccountsEvolution({ accounts, trend }) {
                 />
                 <YAxis
                   tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => `$${Math.round(value / 1000000)}M`}
+                  tickFormatter={formatShortCurrency}
                 />
                 <Tooltip
                   formatter={(value) => formatCurrency(value)}
-                  labelFormatter={(date) => `Fecha: ${formatDateShort(date)}`}
+                  labelFormatter={(date) => formatDateShort(date)}
                   contentStyle={{
                     backgroundColor: '#fff',
                     border: '1px solid #ddd',
@@ -104,20 +142,22 @@ export default function AccountsEvolution({ accounts, trend }) {
                   }}
                 />
                 <Legend />
-                {selectedAccounts.map((accountName, idx) => {
+                {selectedEtiquetas.map((accountName) => {
                   const accountData = accounts.find(a => a.name === accountName)
                   if (!accountData) return null
+                  const globalIdx = accounts.indexOf(accountData)
 
                   return (
                     <Line
                       key={accountName}
                       type="monotone"
                       dataKey={accountName}
-                      stroke={ACCOUNT_COLORS[accounts.indexOf(accountData) % ACCOUNT_COLORS.length]}
+                      stroke={ACCOUNT_COLORS[globalIdx % ACCOUNT_COLORS.length]}
                       strokeWidth={2}
                       dot={{ r: 3 }}
                       activeDot={{ r: 5 }}
                       isAnimationActive={false}
+                      name={accountData.etiqueta || accountName}
                     />
                   )
                 })}

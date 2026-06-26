@@ -1,3 +1,12 @@
+:root {
+  --color-primary: #185FA5;
+  --color-primary-dark: #0D3F7F;
+  --color-primary-hover: #0C447C;
+  --color-success: #6B8E23;
+  --color-danger: #c62828;
+  --color-warning: #f57c00;
+}
+
 * {
   margin: 0;
   padding: 0;

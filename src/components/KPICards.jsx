@@ -20,7 +20,7 @@ export default function KPICards({ kpis }) {
       label: 'Inversiones',
       value: formatShortCurrency(kpis.investments),
       subtitle: formatCurrency(kpis.investments),
-      info: 'Suma de cuentas TRI (trii) + DOLARES.'
+      info: `Cuentas: ${kpis.investmentAccounts || 'TRI + DOLARES + PROTECCION'}`
     },
     {
       label: 'Meses de Runway',
@@ -49,6 +49,27 @@ export default function KPICards({ kpis }) {
       subtitle: null,
       change: kpis.savingsRate,
       info: '(Ingresos − Gastos) ÷ Ingresos del último mes. Qué % de tu ingreso estás ahorrando.'
+    },
+    {
+      label: '% Presupuesto Usado',
+      value: `${kpis.budgetUsed?.toFixed(0) || 0}%`,
+      subtitle: null,
+      change: kpis.budgetUsed > 100 ? kpis.budgetUsed - 100 : undefined,
+      invertColor: true,
+      info: 'Total gastado del mes ÷ presupuesto total definido en la hoja PRESUPUESTO.'
+    },
+    {
+      label: 'Presupuesto Restante',
+      value: formatShortCurrency(kpis.budgetRemaining || 0),
+      subtitle: formatCurrency(kpis.budgetRemaining || 0),
+      info: 'Presupuesto total menos gastos acumulados del mes actual.'
+    },
+    {
+      label: 'Categorías Excedidas',
+      value: `${kpis.categoriesOverBudget || 0} de ${kpis.totalBudgetCategories || 0}`,
+      subtitle: null,
+      change: kpis.categoriesOverBudget > 0 ? -1 : undefined,
+      info: 'Número de categorías donde el gasto superó el presupuesto asignado.'
     }
   ]
 

@@ -55,6 +55,60 @@
   height: 400px;
 }
 
+.composition-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.composition-item {
+  display: grid;
+  grid-template-columns: 180px 1fr 50px;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.composition-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.composition-name {
+  font-size: 0.82rem;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.composition-banco {
+  font-size: 0.65rem;
+  color: #aaa;
+}
+
+.composition-bar-container {
+  height: 18px;
+  background: #f0f0f0;
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.composition-bar {
+  height: 100%;
+  background: #185FA5;
+  border-radius: 9px;
+  min-width: 4px;
+  transition: width 0.3s;
+}
+
+.composition-pct {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #185FA5;
+  text-align: right;
+}
+
 @media (max-width: 768px) {
   .section {
     margin-bottom: 1.5rem;

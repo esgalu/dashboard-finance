@@ -2,7 +2,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { formatDateShort, formatCurrency, formatShortCurrency, calculateChange } from '../../utils/formatters'
 import '../tabs/Trends.css'
 
-export default function Trends({ trend, projectedTrend }) {
+export default function Trends({ trend, projectedTrend, accounts }) {
   if (!trend || !Array.isArray(trend) || trend.length === 0) {
     return (
       <div className="tab-content">
@@ -21,7 +21,7 @@ export default function Trends({ trend, projectedTrend }) {
   const lastValue = validTrend[validTrend.length - 1]?.total || 0
   const changePercent = calculateChange(lastValue, firstValue)
   const trendDirection = changePercent > 0 ? '↑' : '↓'
-  const trendColor = changePercent > 0 ? '#2e7d32' : '#c62828'
+  const trendColor = changePercent > 0 ? '#6B8E23' : '#c62828'
 
   // Combinar datos reales + proyeccion
   const chartData = [
@@ -105,6 +105,30 @@ export default function Trends({ trend, projectedTrend }) {
           </ResponsiveContainer>
         </div>
       </div>
+
+      {accounts && accounts.length > 0 && (
+        <div className="section">
+          <h2>Composición del Patrimonio</h2>
+          <p className="trends-subtitle">Porcentaje que cada cuenta aporta al total</p>
+          <div className="composition-list">
+            {accounts
+              .filter(a => a.share > 0)
+              .sort((a, b) => b.share - a.share)
+              .map((a, idx) => (
+                <div key={idx} className="composition-item">
+                  <div className="composition-info">
+                    <span className="composition-name">{a.etiqueta || a.name}</span>
+                    <span className="composition-banco">{a.banco}</span>
+                  </div>
+                  <div className="composition-bar-container">
+                    <div className="composition-bar" style={{ width: `${Math.max(a.share, 1)}%` }} />
+                  </div>
+                  <span className="composition-pct">{a.share.toFixed(1)}%</span>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

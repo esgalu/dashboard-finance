@@ -53,5 +53,7 @@ export const DATA = {
     { date: '2026-06-22', total: 74904189 }
   ],
 
-  snapshots: []
+  snapshots: [],
+
+  budget: []
 }

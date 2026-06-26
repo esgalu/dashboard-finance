@@ -60,7 +60,7 @@
 
 .activity-icon.deposit {
   background: #e8f5e9;
-  color: #2e7d32;
+  color: #6B8E23;
 }
 
 .activity-icon.withdrawal {
@@ -96,7 +96,7 @@
 }
 
 .activity-amount.positive {
-  color: #2e7d32;
+  color: #6B8E23;
 }
 
 .activity-amount.negative {

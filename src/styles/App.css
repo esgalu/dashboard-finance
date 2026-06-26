@@ -18,10 +18,22 @@
   align-items: center;
 }
 
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-logo {
+  width: 40px;
+  height: 40px;
+}
+
 .header-content h1 {
   font-size: 28px;
   color: #185FA5;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
+  letter-spacing: 3px;
 }
 
 .header-subtitle {
@@ -44,6 +56,75 @@
 .refresh-btn:hover {
   border-color: #185FA5;
   background: #f0f6ff;
+}
+
+.login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.login-card {
+  background: white;
+  border-radius: 16px;
+  padding: 3rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.login-logo {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 1.5rem;
+}
+
+.login-title {
+  font-size: 32px;
+  color: #185FA5;
+  margin-bottom: 0.5rem;
+  letter-spacing: 3px;
+}
+
+.login-subtitle {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 1.5rem;
+}
+
+.login-desc {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.75rem 1.5rem;
+  background: #185FA5;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.login-btn:hover {
+  background: #0C447C;
+  box-shadow: 0 4px 12px rgba(24, 95, 165, 0.3);
+}
+
+.login-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .app-main {

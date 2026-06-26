@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useData } from '../context/DataContext'
-import { calculateChange } from '../utils/formatters'
+import { calculateChange, formatShortCurrency } from '../utils/formatters'
 
 export function useDashboardData() {
   const { data: rawData, isLoading, error, dataSource, refreshData } = useData()
@@ -18,10 +18,22 @@ export function useDashboardData() {
     const depositsByMonth = rawData.depositsByMonth || {}
 
     const totalPatrimony = Object.values(savingsData).reduce((a, b) => a + b, 0)
-    const investmentValue = Object.entries(savingsData)
-      .filter(([key]) => key.includes('TRI'))
-      .reduce((sum, [_, value]) => sum + value, 0) + (savingsData['DOLARES'] || 0)
-    const savingsValue = totalPatrimony - investmentValue
+
+    const investmentBanks = ['TRI', 'DOLARES', 'PROTECCION']
+    const savingsBanks = ['NU', 'PIBANK', 'LULO', 'BANCOLOMBIA', 'BANCOLOMIA']
+
+    const investmentEntries = Object.entries(savingsData)
+      .filter(([key]) => investmentBanks.some(b => key.startsWith(b + ' -') || key === b))
+    const investmentValue = investmentEntries.reduce((sum, [_, value]) => sum + value, 0)
+    const investmentAccounts = investmentEntries
+      .filter(([_, v]) => v > 0)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, val]) => `${name}: ${formatShortCurrency(val)}`)
+      .join(', ')
+
+    const savingsValue = Object.entries(savingsData)
+      .filter(([key]) => savingsBanks.some(b => key.startsWith(b + ' -') || key === b))
+      .reduce((sum, [_, value]) => sum + value, 0)
 
     const avgMonthlyExpense = rawData.monthlyExpense.length > 0
       ? rawData.monthlyExpense.reduce((sum, m) => sum + m.total, 0) / rawData.monthlyExpense.length
@@ -55,15 +67,65 @@ export function useDashboardData() {
       ? ((lastMonthIncome - currentMonthExpense) / lastMonthIncome) * 100
       : 0
 
+    // Presupuesto
+    const budgetRaw = rawData.budget || []
+    const lastMonthCategories = lastMonth && rawData.expensesByMonth?.[lastMonth]
+      ? Object.entries(rawData.expensesByMonth[lastMonth]).reduce((acc, [name, cats]) => {
+          if (Array.isArray(cats)) {
+            cats.forEach(c => { acc[c.name] = (acc[c.name] || 0) + c.value })
+          } else {
+            acc[name] = cats
+          }
+          return acc
+        }, {})
+      : {}
+
+    const expensesByCat = {}
+    if (lastMonth && rawData.expensesByMonth?.[lastMonth]) {
+      const monthCats = rawData.expensesByMonth[lastMonth]
+      if (Array.isArray(monthCats)) {
+        monthCats.forEach(c => { expensesByCat[c.name] = c.value })
+      } else {
+        Object.assign(expensesByCat, monthCats)
+      }
+    }
+
+    const budgetData = budgetRaw.map(b => {
+      const gastado = expensesByCat[b.categoria] || 0
+      const porcentaje = b.presupuesto > 0 ? (gastado / b.presupuesto) * 100 : 0
+      const estado = porcentaje > 100 ? 'rojo' : porcentaje > 80 ? 'amarillo' : 'verde'
+      return { ...b, gastado, porcentaje, estado }
+    }).sort((a, b) => b.porcentaje - a.porcentaje)
+
+    const totalBudget = budgetRaw.reduce((sum, b) => sum + b.presupuesto, 0)
+    const totalBudgetSpent = budgetData.reduce((sum, b) => sum + b.gastado, 0)
+    const budgetUsed = totalBudget > 0 ? (totalBudgetSpent / totalBudget) * 100 : 0
+    const budgetRemaining = totalBudget - totalBudgetSpent
+    const categoriesOverBudget = budgetData.filter(b => b.estado === 'rojo').length
+
+    const now = new Date()
+    const dayOfMonth = now.getDate()
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+    const daysRemaining = daysInMonth - dayOfMonth
+    const projectedMonthEnd = dayOfMonth > 0 ? Math.round((totalBudgetSpent / dayOfMonth) * daysInMonth) : 0
+    const dailyBudgetRemaining = daysRemaining > 0 ? Math.round(budgetRemaining / daysRemaining) : 0
+
     const kpis = {
       patrimony: totalPatrimony,
       savings: savingsValue,
       investments: investmentValue,
+      investmentAccounts,
       runway: monthsOfRunway,
       currentMonthExpense,
       expenseChange,
       patrimonyChange,
-      savingsRate
+      savingsRate,
+      budgetUsed,
+      budgetRemaining,
+      categoriesOverBudget,
+      totalBudgetCategories: budgetRaw.length,
+      projectedMonthEnd,
+      dailyBudgetRemaining
     }
 
     const colors = ['#185FA5', '#0C447C', '#378ADD', '#85B7EB', '#B5D4F4', '#999', '#666', '#444', '#BBB', '#DDD', '#EEE']
@@ -96,8 +158,13 @@ export function useDashboardData() {
       .map(([account, value]) => {
         const initial = initialValues[account]?.saldo || value
         const returnPct = initial > 0 ? ((value - initial) / initial) * 100 : 0
+        const parts = account.split(' - ')
+        const banco = parts[0] || account
+        const etiqueta = parts.slice(1).join(' - ') || null
         return {
           name: account,
+          banco,
+          etiqueta,
           value,
           initialValue: initial,
           percentage: returnPct,
@@ -179,12 +246,14 @@ export function useDashboardData() {
       expenses: {
         categories: expensesWithColor,
         categoriesByMonth,
+        detail: rawData.expenseDetail || {},
         monthly: rawData.monthlyExpense
       },
       trend: trendData,
       projectedTrend,
       cashFlow,
       topExpenses,
+      budgetData,
       accounts: accountsProcessed,
       movements,
       accountTimeSeries

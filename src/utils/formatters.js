@@ -109,7 +109,7 @@ export function getTrendIndicator(value) {
 
 // Color de tendencia
 export function getTrendColor(value) {
-  if (value > 0) return '#2e7d32' // Verde
+  if (value > 0) return '#6B8E23' // Verde
   if (value < 0) return '#c62828' // Rojo
   return '#999' // Gris
 }
