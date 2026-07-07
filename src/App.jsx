@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from './context/AuthContext'
 import KPICards from './components/KPICards'
 import NavTabs from './components/NavTabs'
@@ -19,6 +19,13 @@ function App() {
   const { isAuthenticated, isLoading: authLoading, login } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
   const [mobilePreview, setMobilePreview] = useState(false)
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768)
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
   const { kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, movements, accountTimeSeries, isLoading, error, dataSource, refreshData } = useDashboardData()
 
   if (authLoading) {
@@ -51,6 +58,24 @@ function App() {
             </button>
           </div>
         </div>
+      </div>
+    )
+  }
+
+  if (isMobile && kpis) {
+    return (
+      <div className="mobile-app-root">
+        <MobileDashboard
+          kpis={kpis}
+          expenses={expenses}
+          trend={trend}
+          projectedTrend={projectedTrend}
+          cashFlow={cashFlow}
+          topExpenses={topExpenses}
+          budgetData={budgetData}
+          accounts={accounts}
+          accountTimeSeries={accountTimeSeries}
+        />
       </div>
     )
   }
