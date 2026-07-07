@@ -2,7 +2,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { formatDateShort, formatCurrency, formatShortCurrency, calculateChange } from '../../utils/formatters'
 import '../tabs/Trends.css'
 
-export default function Trends({ trend, projectedTrend, accounts }) {
+export default function Trends({ trend, projectedTrend, accounts, mobileMode }) {
   if (!trend || !Array.isArray(trend) || trend.length === 0) {
     return (
       <div className="tab-content">
@@ -59,13 +59,15 @@ export default function Trends({ trend, projectedTrend, accounts }) {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 12 }}
+                tick={mobileMode ? { fontSize: 9, angle: -45, textAnchor: 'end' } : { fontSize: 12 }}
                 tickFormatter={(date) => formatDateShort(date)}
-                interval={Math.floor(chartData.length / 6)}
+                interval={mobileMode ? Math.floor(chartData.length / 4) : Math.floor(chartData.length / 6)}
+                height={mobileMode ? 48 : 30}
               />
               <YAxis
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: mobileMode ? 9 : 12 }}
                 tickFormatter={formatShortCurrency}
+                width={mobileMode ? 52 : 60}
               />
               <Tooltip
                 formatter={(value, name) => [

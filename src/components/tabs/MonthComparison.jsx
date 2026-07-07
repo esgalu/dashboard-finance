@@ -55,7 +55,7 @@ export default function MonthComparison({ expenses }) {
   }
 
   return (
-    <div className="section">
+    <div className="section section--comparison">
       <div className="section-header">
         <h2>Comparativo Mensual</h2>
       </div>

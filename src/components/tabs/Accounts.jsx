@@ -46,9 +46,11 @@ export default function Accounts({ accounts, total, accountTimeSeries }) {
         </div>
       </div>
 
-      {accountTimeSeries && accountTimeSeries.length > 0 && (
-        <AccountsEvolution accounts={accounts} trend={accountTimeSeries} />
-      )}
+      <div className="accounts-evolution-section">
+        {accountTimeSeries && accountTimeSeries.length > 0 && (
+          <AccountsEvolution accounts={accounts} trend={accountTimeSeries} />
+        )}
+      </div>
 
       {(() => {
         const sorted = accounts
@@ -59,7 +61,7 @@ export default function Accounts({ accounts, total, accountTimeSeries }) {
         const chartHeight = Math.max(400, sorted.length * 40 + 60)
 
         return (
-          <div className="section">
+          <div className="section section--rendimiento">
             <h2>Rendimiento vs Valor Inicial</h2>
             <div className="chart-container" style={{ height: chartHeight }}>
               <ResponsiveContainer width="100%" height="100%">

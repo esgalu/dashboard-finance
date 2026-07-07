@@ -10,12 +10,15 @@ import Accounts from './components/tabs/Accounts'
 import AuthStatus from './components/AuthStatus'
 import LoadingOverlay from './components/LoadingOverlay'
 import ErrorBanner from './components/ErrorBanner'
+import IPhoneFrame from './components/IPhoneFrame'
+import MobileDashboard from './components/MobileDashboard'
 import { useDashboardData } from './hooks/useDashboardData'
 import './styles/App.css'
 
 function App() {
   const { isAuthenticated, isLoading: authLoading, login } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
+  const [mobilePreview, setMobilePreview] = useState(false)
   const { kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, movements, accountTimeSeries, isLoading, error, dataSource, refreshData } = useDashboardData()
 
   if (authLoading) {
@@ -63,7 +66,16 @@ function App() {
             </div>
             <p className="header-subtitle">Conectado a Google Sheets</p>
           </div>
-          <AuthStatus />
+          <div className="header-actions">
+            <button className="mobile-preview-btn" onClick={() => setMobilePreview(true)} title="Vista iPhone 16">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="3"/>
+                <circle cx="12" cy="18" r="0.8" fill="currentColor" stroke="none"/>
+              </svg>
+              Vista móvil
+            </button>
+            <AuthStatus />
+          </div>
         </div>
       </header>
 
@@ -91,6 +103,22 @@ function App() {
           <button className="refresh-btn" onClick={refreshData}>Actualizar datos</button>
         </footer>
       </main>
+
+      {mobilePreview && (
+        <IPhoneFrame onExit={() => setMobilePreview(false)}>
+          <MobileDashboard
+            kpis={kpis}
+            expenses={expenses}
+            trend={trend}
+            projectedTrend={projectedTrend}
+            cashFlow={cashFlow}
+            topExpenses={topExpenses}
+            budgetData={budgetData}
+            accounts={accounts}
+            accountTimeSeries={accountTimeSeries}
+          />
+        </IPhoneFrame>
+      )}
     </div>
   )
 }

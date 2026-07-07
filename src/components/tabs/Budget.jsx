@@ -184,7 +184,7 @@ export default function Budget({ budgetData, kpis, expenses }) {
         </div>
       </div>
 
-      <div className="section">
+      <div className="section section--budget-chart">
         <h2>Presupuesto vs Real</h2>
         <div className="chart-container" style={{ height: Math.max(400, sortedByBudget.length * 40 + 60) }}>
           <ResponsiveContainer width="100%" height="100%">

@@ -41,6 +41,31 @@
   color: #888;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mobile-preview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4rem 0.85rem;
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #185FA5;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobile-preview-btn:hover {
+  border-color: #185FA5;
+  background: #f0f6ff;
+}
+
 .refresh-btn {
   margin-top: 0.5rem;
   padding: 0.4rem 0.75rem;
