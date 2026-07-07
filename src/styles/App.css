@@ -66,6 +66,12 @@
   background: #f0f6ff;
 }
 
+@media (max-width: 768px) {
+  .mobile-preview-btn {
+    display: none;
+  }
+}
+
 .refresh-btn {
   margin-top: 0.5rem;
   padding: 0.4rem 0.75rem;
