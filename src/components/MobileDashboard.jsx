@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import KPICards from './KPICards'
 import Overview from './tabs/Overview'
 import Budget from './tabs/Budget'
 import CashFlow from './tabs/CashFlow'
@@ -30,7 +31,12 @@ export default function MobileDashboard({ kpis, expenses, trend, projectedTrend,
       </header>
 
       <div className="mobile-content">
-        {activeTab === 'overview' && <Overview expenses={expenses} topExpenses={topExpenses} />}
+        {activeTab === 'overview' && (
+          <>
+            {kpis && <KPICards kpis={kpis} />}
+            <Overview expenses={expenses} topExpenses={topExpenses} />
+          </>
+        )}
         {activeTab === 'budget' && <Budget budgetData={budgetData} kpis={kpis} expenses={expenses} />}
         {activeTab === 'cashflow' && <CashFlow cashFlow={cashFlow} totalBudget={totalBudget} />}
         {activeTab === 'accounts' && <Accounts accounts={accounts} total={kpis?.patrimony} accountTimeSeries={accountTimeSeries} />}
