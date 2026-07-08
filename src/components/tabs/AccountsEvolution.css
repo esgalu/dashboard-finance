@@ -1,7 +1,7 @@
 .account-filter {
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: #f5f5f5;
+  background: var(--bg-surface-2);
   border-radius: 8px;
 }
 
@@ -20,28 +20,28 @@
 
 .filter-label {
   font-size: 0.75rem;
-  color: #888;
+  color: var(--text-tertiary);
   font-weight: 500;
 }
 
 .filter-select {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color-strong);
   border-radius: 6px;
   font-size: 0.85rem;
-  color: #333;
-  background: white;
+  color: var(--text-primary);
+  background: var(--bg-surface);
   cursor: pointer;
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #185FA5;
+  border-color: var(--color-primary);
 }
 
 .select-all-btn {
   padding: 0.5rem 1rem;
-  background: #185FA5;
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 6px;
@@ -53,7 +53,7 @@
 }
 
 .select-all-btn:hover {
-  background: #0C447C;
+  background: var(--color-primary-hover);
 }
 
 .account-checkboxes {
@@ -68,7 +68,7 @@
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.9rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .account-checkbox input {

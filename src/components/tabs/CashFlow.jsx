@@ -8,7 +8,7 @@ export default function CashFlow({ cashFlow, totalBudget }) {
       <div className="tab-content">
         <div className="section">
           <h2>Flujo de Caja</h2>
-          <p style={{ color: '#999', textAlign: 'center', padding: '2rem' }}>Sin datos disponibles</p>
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>Sin datos disponibles</p>
         </div>
       </div>
     )
@@ -35,23 +35,23 @@ export default function CashFlow({ cashFlow, totalBudget }) {
               {totalBudget > 0 && (
                 <ReferenceLine
                   y={totalBudget}
-                  stroke="#f57c00"
+                  stroke="var(--color-warning)"
                   strokeDasharray="8 4"
                   strokeWidth={2}
                   label={{
                     value: `Presupuesto ${formatShortCurrency(totalBudget)}`,
                     position: 'right',
-                    fill: '#f57c00',
+                    fill: 'var(--color-warning)',
                     fontSize: 11,
                     fontWeight: 600
                   }}
                 />
               )}
-              <Bar dataKey="income" fill="#6B8E23" radius={[8, 8, 0, 0]}>
-                <LabelList dataKey="income" position="top" formatter={formatShortCurrency} style={{ fontSize: 10, fill: '#6B8E23' }} />
+              <Bar dataKey="income" fill="var(--color-success)" radius={[8, 8, 0, 0]}>
+                <LabelList dataKey="income" position="top" formatter={formatShortCurrency} style={{ fontSize: 10, fill: 'var(--color-success)' }} />
               </Bar>
-              <Bar dataKey="expenses" fill="#c62828" radius={[8, 8, 0, 0]}>
-                <LabelList dataKey="expenses" position="top" formatter={formatShortCurrency} style={{ fontSize: 10, fill: '#c62828' }} />
+              <Bar dataKey="expenses" fill="var(--color-danger)" radius={[8, 8, 0, 0]}>
+                <LabelList dataKey="expenses" position="top" formatter={formatShortCurrency} style={{ fontSize: 10, fill: 'var(--color-danger)' }} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -64,7 +64,7 @@ export default function CashFlow({ cashFlow, totalBudget }) {
             return (
               <div key={cf.month} className="cashflow-month">
                 <span className="cashflow-month-name">{formatMonth(cf.month)}</span>
-                <span className="cashflow-balance" style={{ color: isPositive ? '#6B8E23' : '#c62828' }}>
+                <span className="cashflow-balance" style={{ color: isPositive ? 'var(--color-success)' : 'var(--color-danger)' }}>
                   {isPositive ? '+' : ''}{formatCurrency(balance)}
                 </span>
                 <span className="cashflow-label">{isPositive ? 'Ahorraste' : 'Déficit'}</span>

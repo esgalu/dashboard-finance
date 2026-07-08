@@ -4,9 +4,9 @@ import { formatCurrency, formatShortCurrency, formatMonth } from '../../utils/fo
 import './Budget.css'
 
 function getStatusColor(estado) {
-  if (estado === 'rojo') return '#c62828'
-  if (estado === 'amarillo') return '#f57c00'
-  return '#6B8E23'
+  if (estado === 'rojo') return 'var(--color-danger)'
+  if (estado === 'amarillo') return 'var(--color-warning)'
+  return 'var(--color-success)'
 }
 
 export default function Budget({ budgetData, kpis, expenses }) {
@@ -15,7 +15,7 @@ export default function Budget({ budgetData, kpis, expenses }) {
       <div className="tab-content">
         <div className="section">
           <h2>Presupuesto</h2>
-          <p style={{ color: '#999', textAlign: 'center', padding: '2rem' }}>
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>
             Sin datos de presupuesto. Crea la hoja PRESUPUESTO en tu Google Sheet.
           </p>
         </div>
@@ -48,7 +48,7 @@ export default function Budget({ budgetData, kpis, expenses }) {
   const totalBudget = sortedByBudget.reduce((sum, b) => sum + b.presupuesto, 0)
   const totalSpent = sortedByBudget.reduce((sum, b) => sum + b.gastado, 0)
   const overallPct = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0
-  const overallColor = overallPct > 100 ? '#c62828' : overallPct > 80 ? '#f57c00' : '#6B8E23'
+  const overallColor = overallPct > 100 ? 'var(--color-danger)' : overallPct > 80 ? 'var(--color-warning)' : 'var(--color-success)'
 
   const isCurrentMonth = selectedMonth === availableMonths[availableMonths.length - 1]
   const projectedMonthEnd = useMemo(() => {
@@ -119,20 +119,20 @@ export default function Budget({ budgetData, kpis, expenses }) {
                   label="Proyección fin de mes"
                   info="(Gasto acumulado ÷ días transcurridos) × días del mes. Estima cuánto gastarás si mantienes el ritmo actual."
                   value={formatCurrency(projectedMonthEnd)}
-                  color={projectedMonthEnd > totalBudget ? '#c62828' : '#6B8E23'}
+                  color={projectedMonthEnd > totalBudget ? 'var(--color-danger)' : 'var(--color-success)'}
                 />
                 <BudgetMetaItem
                   label="Disponible por día"
                   info="(Presupuesto total − gasto acumulado) ÷ días restantes del mes. Cuánto puedes gastar por día sin exceder el presupuesto."
                   value={formatCurrency(dailyBudgetRemaining)}
-                  color={dailyBudgetRemaining < 0 ? '#c62828' : '#333'}
+                  color={dailyBudgetRemaining < 0 ? 'var(--color-danger)' : 'var(--text-primary)'}
                 />
               </>
             ) : (
               <>
                 <div className="budget-meta-item">
                   <span className="budget-meta-label">Resultado del mes</span>
-                  <span className="budget-meta-value" style={{ color: totalSpent > totalBudget ? '#c62828' : '#6B8E23' }}>
+                  <span className="budget-meta-value" style={{ color: totalSpent > totalBudget ? 'var(--color-danger)' : 'var(--color-success)' }}>
                     {totalSpent > totalBudget ? 'Excedido por ' : 'Ahorraste '}
                     {formatCurrency(Math.abs(totalBudget - totalSpent))}
                   </span>
@@ -194,10 +194,10 @@ export default function Budget({ budgetData, kpis, expenses }) {
               <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={120} />
               <Tooltip formatter={(value) => formatCurrency(value)} />
               <Legend />
-              <Bar dataKey="Presupuesto" fill="#e0e0e0" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="Presupuesto" fill="var(--border-color)" radius={[0, 4, 4, 0]} />
               <Bar dataKey="Gastado" radius={[0, 4, 4, 0]}>
                 {chartData.map((entry, idx) => (
-                  <Cell key={idx} fill={entry.Gastado > entry.Presupuesto ? '#c62828' : '#185FA5'} />
+                  <Cell key={idx} fill={entry.Gastado > entry.Presupuesto ? 'var(--color-danger)' : 'var(--color-primary)'} />
                 ))}
               </Bar>
             </BarChart>

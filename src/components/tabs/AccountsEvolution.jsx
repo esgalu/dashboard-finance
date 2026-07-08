@@ -14,7 +14,7 @@ export default function AccountsEvolution({ accounts, trend }) {
       <div className="tab-content">
         <div className="section">
           <h2>Evolución de Cuentas</h2>
-          <p style={{ color: '#999', textAlign: 'center', padding: '2rem' }}>
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>
             Datos insuficientes para mostrar evolución
           </p>
         </div>
@@ -135,10 +135,11 @@ export default function AccountsEvolution({ accounts, trend }) {
                   formatter={(value) => formatCurrency(value)}
                   labelFormatter={(date) => formatDateShort(date)}
                   contentStyle={{
-                    backgroundColor: '#fff',
-                    border: '1px solid #ddd',
+                    backgroundColor: 'var(--bg-surface)',
+                    border: '1px solid var(--border-color)',
                     borderRadius: '8px',
-                    padding: '10px'
+                    padding: '10px',
+                    color: 'var(--text-primary)'
                   }}
                 />
                 <Legend />
@@ -165,7 +166,7 @@ export default function AccountsEvolution({ accounts, trend }) {
             </ResponsiveContainer>
           </div>
         ) : (
-          <p style={{ color: '#999', textAlign: 'center', padding: '2rem' }}>
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>
             Selecciona al menos una cuenta para ver la evolución
           </p>
         )}

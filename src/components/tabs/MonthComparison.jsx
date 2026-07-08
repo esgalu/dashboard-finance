@@ -70,7 +70,7 @@ export default function MonthComparison({ expenses }) {
         </select>
       </div>
 
-      <div className="comparison-summary" style={{ color: totalChange > 0 ? '#c62828' : '#6B8E23' }}>
+      <div className="comparison-summary" style={{ color: totalChange > 0 ? 'var(--color-danger)' : 'var(--color-success)' }}>
         {totalChange > 0 ? '↑' : '↓'} Gastaste {Math.abs(totalChange).toFixed(1)}%
         {totalChange > 0 ? ' más' : ' menos'} en {formatMonth(monthB)} vs {formatMonth(monthA)}
       </div>
@@ -108,7 +108,7 @@ export default function MonthComparison({ expenses }) {
               </span>
               <span className="comp-val">{formatCurrency(c.valA)}</span>
               <span className="comp-val">{formatCurrency(c.valB)}</span>
-              <span className="comp-change" style={{ color: c.change > 0 ? '#c62828' : '#6B8E23' }}>
+              <span className="comp-change" style={{ color: c.change > 0 ? 'var(--color-danger)' : 'var(--color-success)' }}>
                 {c.change > 0 ? '↑' : '↓'} {Math.abs(c.change).toFixed(1)}%
               </span>
             </div>
@@ -117,7 +117,7 @@ export default function MonthComparison({ expenses }) {
                 <span className="comp-name comp-subname">{sub.name}</span>
                 <span className="comp-val comp-subval">{sub.valA > 0 ? formatCurrency(sub.valA) : '—'}</span>
                 <span className="comp-val comp-subval">{sub.valB > 0 ? formatCurrency(sub.valB) : '—'}</span>
-                <span className="comp-change comp-subval" style={{ color: sub.change > 0 ? '#c62828' : '#6B8E23' }}>
+                <span className="comp-change comp-subval" style={{ color: sub.change > 0 ? 'var(--color-danger)' : 'var(--color-success)' }}>
                   {sub.valA > 0 && sub.valB > 0 ? `${sub.change > 0 ? '↑' : '↓'} ${Math.abs(sub.change).toFixed(0)}%` : sub.valB > 0 ? 'Nuevo' : '—'}
                 </span>
               </div>
@@ -128,7 +128,7 @@ export default function MonthComparison({ expenses }) {
           <span className="comp-name">TOTAL</span>
           <span className="comp-val">{formatCurrency(totalA)}</span>
           <span className="comp-val">{formatCurrency(totalB)}</span>
-          <span className="comp-change" style={{ color: totalChange > 0 ? '#c62828' : '#6B8E23' }}>
+          <span className="comp-change" style={{ color: totalChange > 0 ? 'var(--color-danger)' : 'var(--color-success)' }}>
             {totalChange > 0 ? '↑' : '↓'} {Math.abs(totalChange).toFixed(1)}%
           </span>
         </div>

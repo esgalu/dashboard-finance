@@ -1,6 +1,6 @@
 .budget-overview {
-  background: #f9f9f9;
-  border: 1px solid #e0e0e0;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -8,7 +8,7 @@
 
 .budget-bar-track {
   height: 24px;
-  background: #e0e0e0;
+  background: var(--border-color);
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 0.75rem;
@@ -24,7 +24,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .budget-overview-pct {
@@ -38,7 +38,7 @@
   gap: 1rem;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #e8e8e8;
+  border-top: 1px solid var(--border-color-soft);
 }
 
 .budget-meta-item {
@@ -49,7 +49,7 @@
 
 .budget-meta-label {
   font-size: 0.72rem;
-  color: #999;
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -62,34 +62,34 @@
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color-strong);
   font-size: 9px;
   font-style: italic;
   font-family: serif;
-  color: #999;
+  color: var(--text-muted);
   cursor: pointer;
 }
 
 .budget-meta-info:hover {
-  border-color: #185FA5;
-  color: #185FA5;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .budget-meta-tooltip {
   display: block;
   margin-top: 4px;
   padding: 6px 8px;
-  background: #e8f0fe;
+  background: var(--primary-bg-soft);
   border-radius: 6px;
   font-size: 10px;
-  color: #333;
+  color: var(--text-primary);
   line-height: 1.4;
 }
 
 .budget-meta-value {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .budget-categories {
@@ -100,8 +100,8 @@
 
 .budget-category {
   padding: 0.75rem;
-  background: #fafafa;
-  border: 1px solid #f0f0f0;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-color-soft);
   border-radius: 8px;
 }
 
@@ -115,7 +115,7 @@
 .budget-cat-name {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .budget-cat-badge {
@@ -126,18 +126,18 @@
 }
 
 .budget-cat-badge.fijo {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: var(--primary-bg-soft);
+  color: var(--color-primary);
 }
 
 .budget-cat-badge.variable {
-  background: #fff3e0;
-  color: #e65100;
+  background: var(--warning-bg-soft);
+  color: var(--color-warning);
 }
 
 .budget-cat-bar-track {
   height: 10px;
-  background: #e8e8e8;
+  background: var(--border-color-soft);
   border-radius: 5px;
   overflow: hidden;
   position: relative;
@@ -169,7 +169,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.75rem;
-  color: #888;
+  color: var(--text-tertiary);
 }
 
 .budget-cat-pct {

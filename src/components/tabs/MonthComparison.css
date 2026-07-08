@@ -7,22 +7,22 @@
 
 .comparison-selectors select {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color-strong);
   border-radius: 8px;
   font-size: 0.85rem;
-  color: #333;
-  background: white;
+  color: var(--text-primary);
+  background: var(--bg-surface);
   cursor: pointer;
 }
 
 .comparison-selectors select:focus {
   outline: none;
-  border-color: #185FA5;
+  border-color: var(--color-primary);
 }
 
 .comparison-vs {
   font-size: 0.85rem;
-  color: #999;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
@@ -31,7 +31,7 @@
   font-weight: 600;
   margin-bottom: 1rem;
   padding: 0.5rem 0.75rem;
-  background: #f9f9f9;
+  background: var(--bg-surface-2);
   border-radius: 8px;
 }
 
@@ -43,22 +43,22 @@
   display: grid;
   grid-template-columns: 2fr 1.5fr 1.5fr 1fr;
   padding: 0.6rem 0.5rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-color-soft);
   align-items: center;
   font-size: 0.82rem;
 }
 
 .comparison-header {
   font-weight: 600;
-  color: #666;
-  border-bottom: 2px solid #e0e0e0;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border-color);
   font-size: 0.75rem;
   text-transform: uppercase;
 }
 
 .comparison-total {
   font-weight: 700;
-  border-top: 2px solid #e0e0e0;
+  border-top: 2px solid var(--border-color);
   border-bottom: none;
   padding-top: 0.75rem;
 }
@@ -86,26 +86,26 @@
 }
 
 .comparison-expandable:hover {
-  background: #f0f6ff;
+  background: var(--bg-hover);
 }
 
 .comparison-expandable.expanded {
-  background: #f5f8ff;
+  background: var(--primary-bg-soft);
   font-weight: 600;
 }
 
 .comp-arrow {
   font-size: 9px;
   margin-right: 6px;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .comparison-subrow {
-  background: #fafafa;
+  background: var(--bg-surface-2);
   padding-left: 1.5rem;
   font-size: 0.75rem;
-  color: #666;
-  border-bottom: 1px solid #f5f5f5;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color-soft);
 }
 
 .comp-subname {
@@ -114,7 +114,7 @@
 
 .comp-subval {
   font-size: 0.73rem;
-  color: #888;
+  color: var(--text-tertiary);
 }
 
 @media (max-width: 768px) {

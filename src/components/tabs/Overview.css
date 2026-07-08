@@ -9,7 +9,7 @@
   margin: 0;
   font-size: 16px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .month-selector {
@@ -19,41 +19,41 @@
 
 .month-btn {
   padding: 0.5rem 1rem;
-  border: 1px solid #ddd;
-  background: white;
+  border: 1px solid var(--border-color-strong);
+  background: var(--bg-surface);
   border-radius: 6px;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .month-btn:hover {
-  border-color: #185FA5;
-  color: #185FA5;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .month-btn.active {
-  background: #185FA5;
+  background: var(--color-primary);
   color: white;
-  border-color: #185FA5;
+  border-color: var(--color-primary);
 }
 
 .variation-badge {
   font-size: 1rem;
   font-weight: 600;
   padding: 0.25rem 0.75rem;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(127, 127, 127, 0.12);
   border-radius: 4px;
 }
 
 .chart-container {
   position: relative;
   height: 380px;
-  background: #fafafa;
+  background: var(--bg-surface-2);
   border-radius: 8px;
   padding: 1rem;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
 }
 
 .chart-container.tall {
@@ -82,7 +82,7 @@
 
 .pie-legend-item {
   padding: 0.45rem 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--border-color-soft);
 }
 
 .pie-legend-item:last-child {
@@ -107,20 +107,20 @@
   flex: 1;
   font-size: 13px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .pie-legend-pct {
   font-size: 13px;
   font-weight: 600;
-  color: #444;
+  color: var(--text-primary);
   min-width: 38px;
   text-align: right;
 }
 
 .pie-legend-bar-track {
   height: 3px;
-  background: #f0f0f0;
+  background: var(--bg-surface-3);
   border-radius: 2px;
   margin-bottom: 0.2rem;
 }
@@ -132,12 +132,12 @@
 
 .pie-legend-value {
   font-size: 11px;
-  color: #aaa;
+  color: var(--text-faint);
 }
 
 .pie-tooltip {
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
   display: flex;
@@ -155,13 +155,13 @@
 }
 
 .pie-tooltip-name {
-  color: #555;
+  color: var(--text-secondary);
   flex: 1;
 }
 
 .pie-tooltip-value {
   font-weight: 600;
-  color: #222;
+  color: var(--text-heading-strong);
 }
 
 @media (max-width: 768px) {

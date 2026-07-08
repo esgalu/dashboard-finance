@@ -9,7 +9,7 @@ export default function Accounts({ accounts, total, accountTimeSeries }) {
       <div className="tab-content">
         <div className="section">
           <h2>Distribución de Cuentas</h2>
-          <p style={{ color: '#999', textAlign: 'center', padding: '2rem' }}>Sin cuentas disponibles</p>
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>Sin cuentas disponibles</p>
         </div>
       </div>
     )
@@ -78,7 +78,7 @@ export default function Accounts({ accounts, total, accountTimeSeries }) {
                   />
                   <Bar dataKey="percentage" radius={[0, 4, 4, 0]}>
                     {sorted.map((entry, idx) => (
-                      <Cell key={idx} fill={entry.percentage >= 0 ? '#6B8E23' : '#c62828'} />
+                      <Cell key={idx} fill={entry.percentage >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
                     ))}
                     <LabelList dataKey="percentage" position="right" formatter={v => `${v.toFixed(1)}%`} style={{ fontSize: 11, fontWeight: 600 }} />
                   </Bar>

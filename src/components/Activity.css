@@ -1,17 +1,17 @@
 .activity-container {
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-color);
 }
 
 .activity-container h3 {
-  color: #185FA5;
+  color: var(--color-primary);
   font-size: 1.1rem;
   margin-bottom: 1rem;
 }
 
 .activity-empty {
-  color: #999;
+  color: var(--text-muted);
   font-size: 0.9rem;
   text-align: center;
   padding: 2rem 1rem;
@@ -28,14 +28,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  background: #fafafa;
+  background: var(--bg-surface-2);
   border-radius: 8px;
-  border-left: 3px solid #185FA5;
+  border-left: 3px solid var(--color-primary);
   transition: background 0.2s;
 }
 
 .activity-item:hover {
-  background: #f0f6ff;
+  background: var(--bg-hover);
 }
 
 .activity-left {
@@ -59,13 +59,13 @@
 }
 
 .activity-icon.deposit {
-  background: #e8f5e9;
-  color: #6B8E23;
+  background: var(--success-bg-soft);
+  color: var(--color-success);
 }
 
 .activity-icon.withdrawal {
-  background: #ffebee;
-  color: #c62828;
+  background: var(--danger-bg-soft);
+  color: var(--color-danger);
 }
 
 .activity-info {
@@ -75,7 +75,7 @@
 .activity-label {
   font-size: 0.9rem;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -84,7 +84,7 @@
 
 .activity-date {
   font-size: 0.75rem;
-  color: #999;
+  color: var(--text-muted);
   margin: 0.25rem 0 0 0;
 }
 
@@ -96,11 +96,11 @@
 }
 
 .activity-amount.positive {
-  color: #6B8E23;
+  color: var(--color-success);
 }
 
 .activity-amount.negative {
-  color: #c62828;
+  color: var(--color-danger);
 }
 
 @media (max-width: 768px) {

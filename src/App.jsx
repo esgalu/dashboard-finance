@@ -13,6 +13,7 @@ import ErrorBanner from './components/ErrorBanner'
 import IPhoneFrame from './components/IPhoneFrame'
 import MobileDashboard from './components/MobileDashboard'
 import { useDashboardData } from './hooks/useDashboardData'
+import { useAutoTheme } from './hooks/useAutoTheme'
 import './styles/App.css'
 
 function App() {
@@ -20,6 +21,8 @@ function App() {
   const [activeTab, setActiveTab] = useState('overview')
   const [mobilePreview, setMobilePreview] = useState(false)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768)
+
+  useAutoTheme()
 
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth <= 768)

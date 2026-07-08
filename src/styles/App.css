@@ -5,12 +5,12 @@
 
 .app-container {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: var(--bg-page);
   padding: 1rem;
 }
 
 .app-header {
-  background: white;
+  background: var(--bg-surface);
   border-radius: 12px 12px 0 0;
   padding: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -36,14 +36,14 @@
 
 .header-content h1 {
   font-size: 28px;
-  color: #185FA5;
+  color: var(--color-primary);
   margin-bottom: 0;
   letter-spacing: 3px;
 }
 
 .header-subtitle {
   font-size: 13px;
-  color: #888;
+  color: var(--text-tertiary);
 }
 
 .header-actions {
@@ -58,17 +58,17 @@
   gap: 6px;
   padding: 0.4rem 0.85rem;
   background: transparent;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color-strong);
   border-radius: 6px;
   font-size: 0.8rem;
-  color: #185FA5;
+  color: var(--color-primary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .mobile-preview-btn:hover {
-  border-color: #185FA5;
-  background: #f0f6ff;
+  border-color: var(--color-primary);
+  background: var(--bg-hover);
 }
 
 @media (max-width: 768px) {
@@ -81,17 +81,17 @@
   margin-top: 0.5rem;
   padding: 0.4rem 0.75rem;
   background: transparent;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color-strong);
   border-radius: 6px;
   font-size: 0.8rem;
-  color: #185FA5;
+  color: var(--color-primary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .refresh-btn:hover {
-  border-color: #185FA5;
-  background: #f0f6ff;
+  border-color: var(--color-primary);
+  background: var(--bg-hover);
 }
 
 .login-screen {
@@ -102,7 +102,7 @@
 }
 
 .login-card {
-  background: white;
+  background: var(--bg-surface);
   border-radius: 16px;
   padding: 3rem;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
@@ -119,20 +119,20 @@
 
 .login-title {
   font-size: 32px;
-  color: #185FA5;
+  color: var(--color-primary);
   margin-bottom: 0.5rem;
   letter-spacing: 3px;
 }
 
 .login-subtitle {
   font-size: 14px;
-  color: #888;
+  color: var(--text-tertiary);
   margin-bottom: 1.5rem;
 }
 
 .login-desc {
   font-size: 13px;
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.6;
   margin-bottom: 2rem;
 }
@@ -142,7 +142,7 @@
   align-items: center;
   gap: 10px;
   padding: 0.75rem 1.5rem;
-  background: #185FA5;
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 10px;
@@ -153,7 +153,7 @@
 }
 
 .login-btn:hover {
-  background: #0C447C;
+  background: var(--color-primary-hover);
   box-shadow: 0 4px 12px rgba(24, 95, 165, 0.3);
 }
 
@@ -166,7 +166,7 @@
 .app-main {
   max-width: 1200px;
   margin: 0 auto;
-  background: white;
+  background: var(--bg-surface);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 2rem;
   border-radius: 0 0 12px 12px;
@@ -186,9 +186,9 @@
 .app-footer {
   margin-top: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-color);
   font-size: 12px;
-  color: #888;
+  color: var(--text-tertiary);
 }
 
 .app-footer p {

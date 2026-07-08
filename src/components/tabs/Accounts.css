@@ -21,7 +21,7 @@
   font-size: 16px;
   font-weight: 500;
   margin-bottom: 1rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .accounts-grid {
@@ -31,21 +31,21 @@
 }
 
 .account-card {
-  background: #f9f9f9;
-  border: 1px solid #e0e0e0;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 12px;
   transition: all 0.2s ease;
 }
 
 .account-card:hover {
-  border-color: #185FA5;
+  border-color: var(--color-primary);
   box-shadow: 0 2px 8px rgba(24, 95, 165, 0.1);
 }
 
 .account-name {
   font-size: 12px;
-  color: #888;
+  color: var(--text-tertiary);
   font-weight: 500;
   margin-bottom: 8px;
   white-space: nowrap;
@@ -56,7 +56,7 @@
 .account-value {
   font-size: 16px;
   font-weight: 600;
-  color: #185FA5;
+  color: var(--color-primary);
 }
 
 .account-meta {
@@ -69,7 +69,7 @@
 
 .account-share {
   font-size: 10px;
-  color: #aaa;
+  color: var(--text-faint);
 }
 
 .account-return {

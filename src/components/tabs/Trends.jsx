@@ -8,7 +8,7 @@ export default function Trends({ trend, projectedTrend, accounts, mobileMode }) 
       <div className="tab-content">
         <div className="section">
           <h2>Evolución del Patrimonio</h2>
-          <p style={{ color: '#999', textAlign: 'center', padding: '2rem' }}>Sin datos disponibles</p>
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>Sin datos disponibles</p>
         </div>
       </div>
     )
@@ -21,7 +21,7 @@ export default function Trends({ trend, projectedTrend, accounts, mobileMode }) 
   const lastValue = validTrend[validTrend.length - 1]?.total || 0
   const changePercent = calculateChange(lastValue, firstValue)
   const trendDirection = changePercent > 0 ? '↑' : '↓'
-  const trendColor = changePercent > 0 ? '#6B8E23' : '#c62828'
+  const trendColor = changePercent > 0 ? 'var(--color-success)' : 'var(--color-danger)'
 
   // Combinar datos reales + proyeccion
   const chartData = [
@@ -76,19 +76,20 @@ export default function Trends({ trend, projectedTrend, accounts, mobileMode }) 
                 ]}
                 labelFormatter={(date) => formatDateShort(date)}
                 contentStyle={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #ddd',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '8px',
-                  padding: '10px'
+                  padding: '10px',
+                  color: 'var(--text-primary)'
                 }}
               />
               <Legend formatter={(value) => value === 'projected' ? 'Proyectado' : 'Patrimonio Real'} />
               <Line
                 type="monotone"
                 dataKey="total"
-                stroke="#185FA5"
+                stroke="var(--color-primary)"
                 strokeWidth={3}
-                dot={{ fill: '#185FA5', r: 4 }}
+                dot={{ fill: 'var(--color-primary)', r: 4 }}
                 activeDot={{ r: 6 }}
                 name="total"
                 connectNulls={false}
