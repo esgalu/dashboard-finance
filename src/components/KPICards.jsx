@@ -11,7 +11,7 @@ export default function KPICards({ kpis }) {
       info: 'Suma de todas las cuentas de ahorro e inversión en el último snapshot completo.'
     },
     {
-      label: 'Ahorros Disponibles',
+      label: 'CDTs',
       value: formatShortCurrency(kpis.savings),
       subtitle: formatCurrency(kpis.savings),
       info: 'Patrimonio Total menos Inversiones. Dinero disponible sin tocar inversiones.'
