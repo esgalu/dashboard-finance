@@ -266,6 +266,27 @@ function parseBudgetSheet(rows) {
     .filter(b => b.presupuesto > 0)
 }
 
+export async function appendCostRow(accessToken, spreadsheetId, { fecha, clasificacion, categoria, costo }) {
+  // Columna B se deja vacia aqui: la hoja calcula el año-mes con formula
+  // (=TEXTO(A{fila};"yyyy-mm")), igual que las filas existentes, en vez de texto plano.
+  const appendUrl = `${SHEETS_API}/${spreadsheetId}/values/${encodeURIComponent('COSTS!A:E')}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`
+  const appendBody = { values: [[fecha, '', clasificacion.trim(), categoria.trim(), costo]] }
+
+  const appendRes = await axios.post(appendUrl, appendBody, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  })
+
+  const updatedRange = appendRes.data?.updates?.updatedRange || ''
+  const row = updatedRange.match(/![A-Z]+(\d+)/)?.[1]
+
+  if (row) {
+    const formulaUrl = `${SHEETS_API}/${spreadsheetId}/values/${encodeURIComponent(`COSTS!B${row}`)}?valueInputOption=USER_ENTERED`
+    await axios.put(formulaUrl, { values: [[`=TEXTO(A${row};"yyyy-mm")`]] }, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    })
+  }
+}
+
 export async function fetchSheetData(accessToken, spreadsheetId) {
   const snapshots = await loadSnapshots(accessToken, spreadsheetId)
 

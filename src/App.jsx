@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from './context/AuthContext'
 import KPICards from './components/KPICards'
 import NavTabs from './components/NavTabs'
@@ -12,6 +12,7 @@ import LoadingOverlay from './components/LoadingOverlay'
 import ErrorBanner from './components/ErrorBanner'
 import IPhoneFrame from './components/IPhoneFrame'
 import MobileDashboard from './components/MobileDashboard'
+import AddExpenseModal from './components/AddExpenseModal'
 import { useDashboardData } from './hooks/useDashboardData'
 import { useAutoTheme } from './hooks/useAutoTheme'
 import './styles/App.css'
@@ -20,6 +21,7 @@ function App() {
   const { isAuthenticated, isLoading: authLoading, login } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
   const [mobilePreview, setMobilePreview] = useState(false)
+  const [showAddExpense, setShowAddExpense] = useState(false)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768)
 
   useAutoTheme()
@@ -30,6 +32,23 @@ function App() {
     return () => window.removeEventListener('resize', handler)
   }, [])
   const { kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, movements, accountTimeSeries, isLoading, error, dataSource, refreshData } = useDashboardData()
+
+  const clasificacionOptions = useMemo(() => expenses?.categories?.map(c => c.name) || [], [expenses])
+
+  const categoriasByClasificacion = useMemo(() => {
+    const sets = {}
+    if (expenses?.detail) {
+      Object.values(expenses.detail).forEach(monthData => {
+        Object.entries(monthData).forEach(([clasificacion, items]) => {
+          if (!sets[clasificacion]) sets[clasificacion] = new Set()
+          items.forEach(item => sets[clasificacion].add(item.name))
+        })
+      })
+    }
+    const result = {}
+    Object.entries(sets).forEach(([k, set]) => { result[k] = Array.from(set).sort() })
+    return result
+  }, [expenses])
 
   if (authLoading) {
     return (
@@ -78,6 +97,10 @@ function App() {
           budgetData={budgetData}
           accounts={accounts}
           accountTimeSeries={accountTimeSeries}
+          clasificacionOptions={clasificacionOptions}
+          categoriasByClasificacion={categoriasByClasificacion}
+          refreshData={refreshData}
+          isLoading={isLoading}
         />
       </div>
     )
@@ -114,6 +137,11 @@ function App() {
         {kpis && (
           <>
             <KPICards kpis={kpis} />
+            <div className="add-expense-trigger-row">
+              <button className="add-expense-trigger-btn" onClick={() => setShowAddExpense(true)}>
+                + Agregar gasto
+              </button>
+            </div>
             <NavTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
             <div className="tab-container">
@@ -144,8 +172,21 @@ function App() {
             budgetData={budgetData}
             accounts={accounts}
             accountTimeSeries={accountTimeSeries}
+            clasificacionOptions={clasificacionOptions}
+            categoriasByClasificacion={categoriasByClasificacion}
+            refreshData={refreshData}
+            isLoading={isLoading}
           />
         </IPhoneFrame>
+      )}
+
+      {showAddExpense && (
+        <AddExpenseModal
+          onClose={() => setShowAddExpense(false)}
+          onSuccess={refreshData}
+          clasificacionOptions={clasificacionOptions}
+          categoriasByClasificacion={categoriasByClasificacion}
+        />
       )}
     </div>
   )

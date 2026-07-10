@@ -6,6 +6,7 @@ import CashFlow from './tabs/CashFlow'
 import Accounts from './tabs/Accounts'
 import Trends from './tabs/Trends'
 import MobileBottomNav from './MobileBottomNav'
+import AddExpenseModal from './AddExpenseModal'
 import './MobileDashboard.css'
 
 const TAB_TITLES = {
@@ -16,8 +17,9 @@ const TAB_TITLES = {
   trends: 'Tendencias',
 }
 
-export default function MobileDashboard({ kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountTimeSeries }) {
+export default function MobileDashboard({ kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountTimeSeries, clasificacionOptions, categoriasByClasificacion, refreshData, isLoading }) {
   const [activeTab, setActiveTab] = useState('overview')
+  const [showAddExpense, setShowAddExpense] = useState(false)
   const totalBudget = budgetData?.reduce((sum, b) => sum + b.presupuesto, 0) || 0
 
   return (
@@ -27,13 +29,30 @@ export default function MobileDashboard({ kpis, expenses, trend, projectedTrend,
           <img src="/assets/logos/axis-isotipo.svg" alt="AXIS" className="mobile-header-logo" />
           <span className="mobile-header-name">AXIS</span>
         </div>
-        <span className="mobile-header-title">{TAB_TITLES[activeTab]}</span>
+        <div className="mobile-header-right">
+          <span className="mobile-header-title">{TAB_TITLES[activeTab]}</span>
+          <button
+            className={`mobile-refresh-btn ${isLoading ? 'spinning' : ''}`}
+            onClick={refreshData}
+            disabled={isLoading}
+            aria-label="Actualizar datos"
+            title="Actualizar datos"
+          >
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+              <path d="M21 4v5h-5"/>
+            </svg>
+          </button>
+        </div>
       </header>
 
       <div className="mobile-content">
         {activeTab === 'overview' && (
           <>
             {kpis && <KPICards kpis={kpis} />}
+            <button className="mobile-add-expense-btn" onClick={() => setShowAddExpense(true)}>
+              + Agregar gasto
+            </button>
             <Overview expenses={expenses} topExpenses={topExpenses} />
           </>
         )}
@@ -44,6 +63,15 @@ export default function MobileDashboard({ kpis, expenses, trend, projectedTrend,
       </div>
 
       <MobileBottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {showAddExpense && (
+        <AddExpenseModal
+          onClose={() => setShowAddExpense(false)}
+          onSuccess={refreshData}
+          clasificacionOptions={clasificacionOptions}
+          categoriasByClasificacion={categoriasByClasificacion}
+        />
+      )}
     </div>
   )
 }

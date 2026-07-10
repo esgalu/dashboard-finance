@@ -47,7 +47,7 @@ export function AuthProvider({ children }) {
   }, [fetchUserInfo])
 
   const googleLogin = useGoogleLogin({
-    scope: 'https://www.googleapis.com/auth/spreadsheets.readonly',
+    scope: 'https://www.googleapis.com/auth/spreadsheets',
     onSuccess: (tokenResponse) => {
       const token = tokenResponse.access_token
       const expiresAt = Date.now() + tokenResponse.expires_in * 1000

@@ -68,24 +68,32 @@ export function formatDateShort(dateStr) {
 export function formatDateFull(dateStr) {
   if (!dateStr) return ''
 
-  const date = new Date(dateStr + 'T00:00:00')
-  return new Intl.DateTimeFormat('es-CO', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }).format(date)
+  try {
+    const date = new Date(dateStr + 'T00:00:00')
+    return new Intl.DateTimeFormat('es-CO', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(date)
+  } catch (e) {
+    return String(dateStr)
+  }
 }
 
 // Formato de mes (Mayo 2026)
 export function formatMonth(monthStr) {
   if (!monthStr) return ''
 
-  const [year, month] = monthStr.split('-')
-  const date = new Date(year, parseInt(month) - 1)
-  return new Intl.DateTimeFormat('es-CO', {
-    year: 'numeric',
-    month: 'long'
-  }).format(date)
+  try {
+    const [year, month] = monthStr.split('-')
+    const date = new Date(year, parseInt(month) - 1)
+    return new Intl.DateTimeFormat('es-CO', {
+      year: 'numeric',
+      month: 'long'
+    }).format(date)
+  } catch (e) {
+    return String(monthStr)
+  }
 }
 
 // Calcular % de cambio
