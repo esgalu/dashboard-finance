@@ -41,7 +41,7 @@ export default function KPICards({ kpis }) {
       value: `${kpis.patrimonyChange > 0 ? '+' : ''}${kpis.patrimonyChange?.toFixed(1) || 0}%`,
       subtitle: null,
       change: kpis.patrimonyChange,
-      info: 'Variación % entre los últimos 2 snapshots de patrimonio.'
+      info: 'Variación % entre el último snapshot y el snapshot más cercano a un mes antes.'
     },
     {
       label: 'Tasa de Ahorro',

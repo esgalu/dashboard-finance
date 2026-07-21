@@ -53,6 +53,23 @@ export function DataProvider({ children }) {
     }
   }, [isAuthenticated, accessToken, loadGoogleData])
 
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const handleVisible = () => {
+      if (document.visibilityState === 'visible') {
+        refreshData()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisible)
+    window.addEventListener('focus', handleVisible)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisible)
+      window.removeEventListener('focus', handleVisible)
+    }
+  }, [isAuthenticated, refreshData])
+
   return (
     <DataContext.Provider value={{ data, dataSource, isLoading, error, refreshData }}>
       {children}

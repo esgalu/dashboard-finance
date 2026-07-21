@@ -24,6 +24,12 @@
   color: var(--text-primary);
 }
 
+.accounts-legend {
+  font-size: 9px;
+  color: var(--text-faint);
+  margin: -6px 0 12px;
+}
+
 .accounts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -75,6 +81,106 @@
 .account-return {
   font-size: 11px;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.account-return-amount {
+  font-size: 9px;
+  font-weight: 500;
+  color: currentColor;
+  opacity: 0.85;
+}
+
+.account-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.account-name-row .account-name {
+  margin-bottom: 0;
+}
+
+.bank-card--expandable {
+  cursor: pointer;
+}
+
+.bank-card--expandable:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.bank-card--expanded {
+  border-color: var(--color-primary);
+}
+
+.bank-chevron {
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-faint);
+  transition: transform 0.2s ease;
+}
+
+.bank-chevron--open {
+  transform: rotate(90deg);
+  color: var(--color-primary);
+}
+
+.bank-subaccounts-row {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 4px 8px;
+  animation: fadeIn 0.2s ease;
+}
+
+.subaccount-card {
+  flex: 1 1 120px;
+  min-width: 110px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.subaccount-name {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subaccount-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 2px;
+}
+
+.subaccount-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.subaccount-share {
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.subaccount-return {
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 @media (max-width: 768px) {
@@ -88,5 +194,15 @@
 
   .account-value {
     font-size: 14px;
+  }
+
+  .bank-subaccounts-row {
+    gap: 6px;
+  }
+
+  .subaccount-card {
+    flex: 1 1 100px;
+    min-width: 90px;
+    padding: 6px 8px;
   }
 }

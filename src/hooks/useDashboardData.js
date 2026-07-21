@@ -2,6 +2,18 @@ import { useMemo } from 'react'
 import { useData } from '../context/DataContext'
 import { calculateChange, formatShortCurrency } from '../utils/formatters'
 
+// Encuentra, dentro de una serie {date, ...}, la entrada cuya fecha esta mas
+// cerca de targetDate. Usado para calcular variaciones "vs. hace N meses"
+// tanto a nivel de patrimonio total como por banco individual.
+function findClosestEntry(entries, targetDate) {
+  if (!entries || entries.length === 0) return null
+  return entries.reduce((closest, entry) => {
+    const diff = Math.abs(new Date(entry.date) - targetDate)
+    const closestDiff = Math.abs(new Date(closest.date) - targetDate)
+    return diff < closestDiff ? entry : closest
+  })
+}
+
 export function useDashboardData() {
   const { data: rawData, isLoading, error, dataSource, refreshData } = useData()
 
@@ -53,9 +65,13 @@ export function useDashboardData() {
 
     let patrimonyChange = 0
     if (trendData.length >= 2) {
-      const prev = trendData[trendData.length - 2].total
-      const curr = trendData[trendData.length - 1].total
-      patrimonyChange = calculateChange(curr, prev)
+      const curr = trendData[trendData.length - 1]
+      const targetDate = new Date(curr.date)
+      targetDate.setMonth(targetDate.getMonth() - 1)
+
+      const prevEntry = findClosestEntry(trendData.slice(0, -1), targetDate)
+
+      patrimonyChange = calculateChange(curr.total, prevEntry.total)
     }
 
     // Tasa de ahorro: (ingresos - gastos) / ingresos del ultimo mes
@@ -153,6 +169,15 @@ export function useDashboardData() {
       }
     })
 
+    // Serie de tiempo por cuenta individual (banco + etiqueta), usada para
+    // calcular la variacion % y en pesos vs. hace ~1 mes de cada cuenta
+    const accountTimeSeriesMap = {}
+    snapshots.forEach(s => {
+      const key = s.etiqueta ? `${s.banco} - ${s.etiqueta}` : s.banco
+      if (!accountTimeSeriesMap[key]) accountTimeSeriesMap[key] = {}
+      accountTimeSeriesMap[key][s.fecha] = (accountTimeSeriesMap[key][s.fecha] || 0) + s.saldo
+    })
+
     const accountsProcessed = Object.entries(savingsData)
       .filter(([_, value]) => value > 0)
       .map(([account, value]) => {
@@ -161,6 +186,22 @@ export function useDashboardData() {
         const parts = account.split(' - ')
         const banco = parts[0] || account
         const etiqueta = parts.slice(1).join(' - ') || null
+
+        const series = Object.entries(accountTimeSeriesMap[account] || {})
+          .map(([date, total]) => ({ date, total }))
+          .sort((a, b) => a.date.localeCompare(b.date))
+
+        let monthChangePercentage = 0
+        let monthChangeAmount = 0
+        if (series.length >= 2) {
+          const curr = series[series.length - 1]
+          const targetDate = new Date(curr.date)
+          targetDate.setMonth(targetDate.getMonth() - 1)
+          const prevEntry = findClosestEntry(series.slice(0, -1), targetDate)
+          monthChangePercentage = calculateChange(curr.total, prevEntry.total)
+          monthChangeAmount = curr.total - prevEntry.total
+        }
+
         return {
           name: account,
           banco,
@@ -168,10 +209,60 @@ export function useDashboardData() {
           value,
           initialValue: initial,
           percentage: returnPct,
-          share: (value / totalPatrimony) * 100
+          share: (value / totalPatrimony) * 100,
+          monthChangePercentage,
+          monthChangeAmount
         }
       })
       .sort((a, b) => b.value - a.value)
+
+    // Serie de tiempo por banco (suma de saldos de todas sus etiquetas por fecha)
+    // Usada para calcular la variacion % vs. hace ~1 mes de cada banco consolidado
+    const bankTimeSeriesMap = {}
+    snapshots.forEach(s => {
+      if (!bankTimeSeriesMap[s.banco]) bankTimeSeriesMap[s.banco] = {}
+      bankTimeSeriesMap[s.banco][s.fecha] = (bankTimeSeriesMap[s.banco][s.fecha] || 0) + s.saldo
+    })
+
+    // Cuentas consolidadas por banco (para la grilla principal de Cuentas)
+    const accountsByBank = (() => {
+      const grouped = {}
+      accountsProcessed.forEach(acc => {
+        if (!grouped[acc.banco]) {
+          grouped[acc.banco] = { banco: acc.banco, value: 0, accounts: [] }
+        }
+        grouped[acc.banco].value += acc.value
+        grouped[acc.banco].accounts.push(acc)
+      })
+
+      return Object.values(grouped)
+        .map(group => {
+          const bankSeries = Object.entries(bankTimeSeriesMap[group.banco] || {})
+            .map(([date, total]) => ({ date, total }))
+            .sort((a, b) => a.date.localeCompare(b.date))
+
+          let changePercentage = 0
+          let changeAmount = 0
+          if (bankSeries.length >= 2) {
+            const curr = bankSeries[bankSeries.length - 1]
+            const targetDate = new Date(curr.date)
+            targetDate.setMonth(targetDate.getMonth() - 1)
+            const prevEntry = findClosestEntry(bankSeries.slice(0, -1), targetDate)
+            changePercentage = calculateChange(curr.total, prevEntry.total)
+            changeAmount = curr.total - prevEntry.total
+          }
+
+          return {
+            banco: group.banco,
+            value: group.value,
+            share: totalPatrimony > 0 ? (group.value / totalPatrimony) * 100 : 0,
+            changePercentage,
+            changeAmount,
+            accounts: group.accounts.sort((a, b) => b.value - a.value)
+          }
+        })
+        .sort((a, b) => b.value - a.value)
+    })()
 
     // Serie de tiempo por cuenta
     const accountTimeSeries = (() => {
@@ -255,6 +346,7 @@ export function useDashboardData() {
       topExpenses,
       budgetData,
       accounts: accountsProcessed,
+      accountsByBank,
       movements,
       accountTimeSeries
     }

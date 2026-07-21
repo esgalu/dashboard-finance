@@ -31,7 +31,7 @@ function App() {
     window.addEventListener('resize', handler)
     return () => window.removeEventListener('resize', handler)
   }, [])
-  const { kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, movements, accountTimeSeries, isLoading, error, dataSource, refreshData } = useDashboardData()
+  const { kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountsByBank, movements, accountTimeSeries, isLoading, error, dataSource, refreshData } = useDashboardData()
 
   const clasificacionOptions = useMemo(() => expenses?.categories?.map(c => c.name) || [], [expenses])
 
@@ -96,6 +96,7 @@ function App() {
           topExpenses={topExpenses}
           budgetData={budgetData}
           accounts={accounts}
+          accountsByBank={accountsByBank}
           accountTimeSeries={accountTimeSeries}
           clasificacionOptions={clasificacionOptions}
           categoriasByClasificacion={categoriasByClasificacion}
@@ -148,7 +149,7 @@ function App() {
               {activeTab === 'overview' && <Overview expenses={expenses} topExpenses={topExpenses} />}
               {activeTab === 'budget' && <Budget budgetData={budgetData} kpis={kpis} expenses={expenses} />}
               {activeTab === 'cashflow' && <CashFlow cashFlow={cashFlow} totalBudget={budgetData?.reduce((sum, b) => sum + b.presupuesto, 0) || 0} />}
-              {activeTab === 'accounts' && <Accounts accounts={accounts} total={kpis.patrimony} accountTimeSeries={accountTimeSeries} />}
+              {activeTab === 'accounts' && <Accounts accounts={accounts} accountsByBank={accountsByBank} total={kpis.patrimony} accountTimeSeries={accountTimeSeries} />}
               {activeTab === 'trends' && <Trends trend={trend} projectedTrend={projectedTrend} accounts={accounts} />}
             </div>
           </>
@@ -171,6 +172,7 @@ function App() {
             topExpenses={topExpenses}
             budgetData={budgetData}
             accounts={accounts}
+            accountsByBank={accountsByBank}
             accountTimeSeries={accountTimeSeries}
             clasificacionOptions={clasificacionOptions}
             categoriasByClasificacion={categoriasByClasificacion}

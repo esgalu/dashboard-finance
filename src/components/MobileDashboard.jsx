@@ -17,7 +17,7 @@ const TAB_TITLES = {
   trends: 'Tendencias',
 }
 
-export default function MobileDashboard({ kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountTimeSeries, clasificacionOptions, categoriasByClasificacion, refreshData, isLoading }) {
+export default function MobileDashboard({ kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountsByBank, accountTimeSeries, clasificacionOptions, categoriasByClasificacion, refreshData, isLoading }) {
   const [activeTab, setActiveTab] = useState('overview')
   const [showAddExpense, setShowAddExpense] = useState(false)
   const totalBudget = budgetData?.reduce((sum, b) => sum + b.presupuesto, 0) || 0
@@ -58,7 +58,7 @@ export default function MobileDashboard({ kpis, expenses, trend, projectedTrend,
         )}
         {activeTab === 'budget' && <Budget budgetData={budgetData} kpis={kpis} expenses={expenses} />}
         {activeTab === 'cashflow' && <CashFlow cashFlow={cashFlow} totalBudget={totalBudget} />}
-        {activeTab === 'accounts' && <Accounts accounts={accounts} total={kpis?.patrimony} accountTimeSeries={accountTimeSeries} />}
+        {activeTab === 'accounts' && <Accounts accounts={accounts} accountsByBank={accountsByBank} total={kpis?.patrimony} accountTimeSeries={accountTimeSeries} />}
         {activeTab === 'trends' && <Trends trend={trend} projectedTrend={projectedTrend} accounts={accounts} mobileMode />}
       </div>
 
