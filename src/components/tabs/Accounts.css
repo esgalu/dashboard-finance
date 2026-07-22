@@ -32,7 +32,7 @@
 
 .accounts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: 12px;
 }
 
@@ -67,10 +67,10 @@
 
 .account-meta {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 6px;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 4px;
+  margin-top: 8px;
 }
 
 .account-share {
@@ -81,7 +81,7 @@
 .account-return {
   font-size: 11px;
   font-weight: 600;
-  white-space: nowrap;
+  line-height: 1.4;
 }
 
 .account-return-amount {

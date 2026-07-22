@@ -1,10 +1,11 @@
 import { Fragment, useState } from 'react'
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts'
-import { formatCurrency, getTrendColor } from '../../utils/formatters'
+import { formatCurrency, formatShortCurrency, getTrendColor } from '../../utils/formatters'
 import AccountsEvolution from './AccountsEvolution'
+import ExpandableChart from '../ExpandableChart'
 import '../tabs/Accounts.css'
 
-export default function Accounts({ accounts, total, accountTimeSeries, accountsByBank }) {
+export default function Accounts({ accounts, total, accountTimeSeries, accountsByBank, mobileMode }) {
   const [expandedBanco, setExpandedBanco] = useState(null)
 
   if (!accounts || !Array.isArray(accounts) || accounts.length === 0) {
@@ -129,43 +130,66 @@ export default function Accounts({ accounts, total, accountTimeSeries, accountsB
 
       <div className="accounts-evolution-section">
         {accountTimeSeries && accountTimeSeries.length > 0 && (
-          <AccountsEvolution accounts={accounts} trend={accountTimeSeries} />
+          <AccountsEvolution accounts={accounts} trend={accountTimeSeries} mobileMode={mobileMode} />
         )}
       </div>
 
       {(() => {
         const sorted = accounts
-          .filter(a => a.percentage !== 0)
-          .sort((a, b) => b.percentage - a.percentage)
+          .filter(a => a.monthChangePercentage !== 0 && a.name !== 'TRI - DISPONIBLE')
+          .sort((a, b) => b.monthChangePercentage - a.monthChangePercentage)
         if (sorted.length === 0) return null
 
         const chartHeight = Math.max(400, sorted.length * 40 + 60)
 
         return (
           <div className="section section--rendimiento">
-            <h2>Rendimiento vs Valor Inicial</h2>
-            <div className="chart-container" style={{ height: chartHeight }}>
+            <h2>Rendimiento vs Mes Anterior</h2>
+            <ExpandableChart mobileMode={mobileMode} title="Rendimiento vs Mes Anterior">
+              <div className="chart-container" style={{ height: chartHeight }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={sorted} layout="vertical" margin={{ top: 10, right: 60, left: 10, bottom: 10 }}>
+                <BarChart data={sorted} layout="vertical" margin={{ top: 10, right: 110, left: 10, bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" tickFormatter={v => `${v.toFixed(0)}%`} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={180} />
                   <Tooltip
                     formatter={(value, _, props) => {
                       const a = props.payload
-                      return [`${value.toFixed(1)}% (Inicial: ${formatCurrency(a.initialValue)} → Actual: ${formatCurrency(a.value)})`]
+                      const previousValue = a.value - a.monthChangeAmount
+                      return [`${value.toFixed(1)}% (Mes anterior: ${formatCurrency(previousValue)} → Actual: ${formatCurrency(a.value)})`]
                     }}
                     labelFormatter={(label) => label}
                   />
-                  <Bar dataKey="percentage" radius={[0, 4, 4, 0]}>
+                  <Bar dataKey="monthChangePercentage" radius={[0, 4, 4, 0]}>
                     {sorted.map((entry, idx) => (
-                      <Cell key={idx} fill={entry.percentage >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
+                      <Cell key={idx} fill={entry.monthChangePercentage >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
                     ))}
-                    <LabelList dataKey="percentage" position="right" formatter={v => `${v.toFixed(1)}%`} style={{ fontSize: 11, fontWeight: 600 }} />
+                    <LabelList
+                      dataKey="monthChangePercentage"
+                      position="right"
+                      content={({ x, y, width, height, index }) => {
+                        const entry = sorted[index]
+                        const amount = entry.monthChangeAmount
+                        const sign = amount >= 0 ? '+' : ''
+                        return (
+                          <text
+                            x={x + width + 6}
+                            y={y + height / 2}
+                            dominantBaseline="middle"
+                            fontSize={11}
+                            fontWeight={600}
+                            fill="var(--text-primary)"
+                          >
+                            {`${entry.monthChangePercentage.toFixed(1)}% (${sign}${formatShortCurrency(amount)})`}
+                          </text>
+                        )
+                      }}
+                    />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+              </div>
+            </ExpandableChart>
           </div>
         )
       })()}

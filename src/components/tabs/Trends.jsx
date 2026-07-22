@@ -1,5 +1,6 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { formatDateShort, formatCurrency, formatShortCurrency, calculateChange } from '../../utils/formatters'
+import ExpandableChart from '../ExpandableChart'
 import '../tabs/Trends.css'
 
 export default function Trends({ trend, projectedTrend, accounts, mobileMode }) {
@@ -53,60 +54,62 @@ export default function Trends({ trend, projectedTrend, accounts, mobileMode }) 
           </div>
         </div>
 
-        <div className="chart-container tall">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="date"
-                tick={mobileMode ? { fontSize: 9, angle: -45, textAnchor: 'end' } : { fontSize: 12 }}
-                tickFormatter={(date) => formatDateShort(date)}
-                interval={mobileMode ? Math.floor(chartData.length / 4) : Math.floor(chartData.length / 6)}
-                height={mobileMode ? 48 : 30}
-              />
-              <YAxis
-                tick={{ fontSize: mobileMode ? 9 : 12 }}
-                tickFormatter={formatShortCurrency}
-                width={mobileMode ? 52 : 60}
-              />
-              <Tooltip
-                formatter={(value, name) => [
-                  formatCurrency(value),
-                  name === 'projected' ? 'Proyectado' : 'Patrimonio Real'
-                ]}
-                labelFormatter={(date) => formatDateShort(date)}
-                contentStyle={{
-                  backgroundColor: 'var(--bg-surface)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  padding: '10px',
-                  color: 'var(--text-primary)'
-                }}
-              />
-              <Legend formatter={(value) => value === 'projected' ? 'Proyectado' : 'Patrimonio Real'} />
-              <Line
-                type="monotone"
-                dataKey="total"
-                stroke="var(--color-primary)"
-                strokeWidth={3}
-                dot={{ fill: 'var(--color-primary)', r: 4 }}
-                activeDot={{ r: 6 }}
-                name="total"
-                connectNulls={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="projected"
-                stroke="#85B7EB"
-                strokeWidth={2}
-                strokeDasharray="6 4"
-                dot={false}
-                name="projected"
-                connectNulls
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        <ExpandableChart mobileMode={mobileMode} title="Evolución del Patrimonio">
+          <div className="chart-container tall">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="date"
+                  tick={mobileMode ? { fontSize: 9, angle: -45, textAnchor: 'end' } : { fontSize: 12 }}
+                  tickFormatter={(date) => formatDateShort(date)}
+                  interval={mobileMode ? Math.floor(chartData.length / 4) : Math.floor(chartData.length / 6)}
+                  height={mobileMode ? 48 : 30}
+                />
+                <YAxis
+                  tick={{ fontSize: mobileMode ? 9 : 12 }}
+                  tickFormatter={formatShortCurrency}
+                  width={mobileMode ? 52 : 60}
+                />
+                <Tooltip
+                  formatter={(value, name) => [
+                    formatCurrency(value),
+                    name === 'projected' ? 'Proyectado' : 'Patrimonio Real'
+                  ]}
+                  labelFormatter={(date) => formatDateShort(date)}
+                  contentStyle={{
+                    backgroundColor: 'var(--bg-surface)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '8px',
+                    padding: '10px',
+                    color: 'var(--text-primary)'
+                  }}
+                />
+                <Legend formatter={(value) => value === 'projected' ? 'Proyectado' : 'Patrimonio Real'} />
+                <Line
+                  type="monotone"
+                  dataKey="total"
+                  stroke="var(--color-primary)"
+                  strokeWidth={3}
+                  dot={{ fill: 'var(--color-primary)', r: 4 }}
+                  activeDot={{ r: 6 }}
+                  name="total"
+                  connectNulls={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="projected"
+                  stroke="#85B7EB"
+                  strokeWidth={2}
+                  strokeDasharray="6 4"
+                  dot={false}
+                  name="projected"
+                  connectNulls
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </ExpandableChart>
       </div>
 
       {accounts && accounts.length > 0 && (

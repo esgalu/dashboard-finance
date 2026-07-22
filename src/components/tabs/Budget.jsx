@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
 import { formatCurrency, formatShortCurrency, formatMonth } from '../../utils/formatters'
+import ExpandableChart from '../ExpandableChart'
 import './Budget.css'
 
 function getStatusColor(estado) {
@@ -9,7 +10,7 @@ function getStatusColor(estado) {
   return 'var(--color-success)'
 }
 
-export default function Budget({ budgetData, kpis, expenses }) {
+export default function Budget({ budgetData, kpis, expenses, mobileMode }) {
   if (!budgetData || budgetData.length === 0) {
     return (
       <div className="tab-content">
@@ -186,23 +187,25 @@ export default function Budget({ budgetData, kpis, expenses }) {
 
       <div className="section section--budget-chart">
         <h2>Presupuesto vs Real</h2>
-        <div className="chart-container" style={{ height: Math.max(400, sortedByBudget.length * 40 + 60) }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" tickFormatter={formatShortCurrency} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={120} />
-              <Tooltip formatter={(value) => formatCurrency(value)} />
-              <Legend />
-              <Bar dataKey="Presupuesto" fill="var(--border-color)" radius={[0, 4, 4, 0]} />
-              <Bar dataKey="Gastado" radius={[0, 4, 4, 0]}>
-                {chartData.map((entry, idx) => (
-                  <Cell key={idx} fill={entry.Gastado > entry.Presupuesto ? 'var(--color-danger)' : 'var(--color-primary)'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <ExpandableChart mobileMode={mobileMode} title="Presupuesto vs Real">
+          <div className="chart-container" style={{ height: Math.max(400, sortedByBudget.length * 40 + 60) }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" tickFormatter={formatShortCurrency} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={120} />
+                <Tooltip formatter={(value) => formatCurrency(value)} />
+                <Legend />
+                <Bar dataKey="Presupuesto" fill="var(--border-color)" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="Gastado" radius={[0, 4, 4, 0]}>
+                  {chartData.map((entry, idx) => (
+                    <Cell key={idx} fill={entry.Gastado > entry.Presupuesto ? 'var(--color-danger)' : 'var(--color-primary)'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </ExpandableChart>
       </div>
     </div>
   )

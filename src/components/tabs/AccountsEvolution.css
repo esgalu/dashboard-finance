@@ -1,3 +1,14 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .account-filter {
   margin-bottom: 1.5rem;
   padding: 1rem;
@@ -7,36 +18,16 @@
 
 .filter-row {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1rem;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .filter-label {
   font-size: 0.75rem;
   color: var(--text-tertiary);
   font-weight: 500;
-}
-
-.filter-select {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border-color-strong);
-  border-radius: 6px;
-  font-size: 0.85rem;
-  color: var(--text-primary);
-  background: var(--bg-surface);
-  cursor: pointer;
-}
-
-.filter-select:focus {
-  outline: none;
-  border-color: var(--color-primary);
 }
 
 .select-all-btn {
@@ -56,12 +47,6 @@
   background: var(--color-primary-hover);
 }
 
-.account-checkboxes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
 .account-checkbox {
   display: flex;
   align-items: center;
@@ -75,6 +60,7 @@
   cursor: pointer;
   width: 16px;
   height: 16px;
+  flex-shrink: 0;
 }
 
 .checkbox-color {
@@ -86,10 +72,82 @@
 }
 
 .checkbox-label {
-  max-width: 150px;
+  max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.bank-filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bank-filter-group {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+.bank-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.bank-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.bank-expand-btn:hover {
+  background: var(--bg-surface-2);
+}
+
+.bank-expand-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.bank-chevron {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-faint);
+  transition: transform 0.2s ease;
+}
+
+.bank-chevron--open {
+  transform: rotate(90deg);
+  color: var(--color-primary);
+}
+
+.bank-subaccount-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color);
+  animation: fadeIn 0.2s ease;
+}
+
+.account-checkbox--sub {
+  font-size: 0.85rem;
+  padding-left: 1.5rem;
+  color: var(--text-secondary, var(--text-primary));
 }
 
 .chart-container.tall {
@@ -102,9 +160,13 @@
     align-items: stretch;
   }
 
-  .account-checkboxes {
+  .bank-subaccount-checkboxes {
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .checkbox-label {
+    max-width: none;
   }
 
   .chart-container.tall {

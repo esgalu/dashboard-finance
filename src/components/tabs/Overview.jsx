@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { formatMonth, formatCurrency } from '../../utils/formatters'
 import MonthComparison from './MonthComparison'
 import TopExpenses from '../TopExpenses'
+import ExpandableChart from '../ExpandableChart'
 import '../tabs/Overview.css'
 
 function CustomTooltip({ active, payload }) {
@@ -17,7 +18,7 @@ function CustomTooltip({ active, payload }) {
   )
 }
 
-export default function Overview({ expenses, topExpenses }) {
+export default function Overview({ expenses, topExpenses, mobileMode }) {
   const availableMonths = expenses.monthly?.map(m => m.month) || []
   const [selectedMonth, setSelectedMonth] = useState(availableMonths[availableMonths.length - 1])
 
@@ -53,47 +54,49 @@ export default function Overview({ expenses, topExpenses }) {
           </div>
         </div>
 
-        <div className="pie-layout">
-          <div className="pie-chart-area">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieChartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={72}
-                  outerRadius={130}
-                  paddingAngle={2}
-                  dataKey="value"
-                  strokeWidth={0}
-                >
-                  {pieChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+        <ExpandableChart mobileMode={mobileMode} title={pieTitle}>
+          <div className="pie-layout">
+            <div className="pie-chart-area">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieChartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={72}
+                    outerRadius={130}
+                    paddingAngle={2}
+                    dataKey="value"
+                    strokeWidth={0}
+                  >
+                    {pieChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
 
-          <div className="pie-legend">
-            {pieChartData.map((entry, idx) => (
-              <div key={idx} className="pie-legend-item">
-                <div className="pie-legend-header">
-                  <span className="pie-legend-dot" style={{ background: entry.color }} />
-                  <span className="pie-legend-name">{entry.name}</span>
-                  <span className="pie-legend-pct">{entry.pct}%</span>
+            <div className="pie-legend">
+              {pieChartData.map((entry, idx) => (
+                <div key={idx} className="pie-legend-item">
+                  <div className="pie-legend-header">
+                    <span className="pie-legend-dot" style={{ background: entry.color }} />
+                    <span className="pie-legend-name">{entry.name}</span>
+                    <span className="pie-legend-pct">{entry.pct}%</span>
+                  </div>
+                  <div className="pie-legend-bar-track">
+                    <div
+                      className="pie-legend-bar-fill"
+                      style={{ width: `${Math.min(entry.pct, 100)}%`, background: entry.color }}
+                    />
+                  </div>
                 </div>
-                <div className="pie-legend-bar-track">
-                  <div
-                    className="pie-legend-bar-fill"
-                    style={{ width: `${Math.min(entry.pct, 100)}%`, background: entry.color }}
-                  />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        </ExpandableChart>
       </div>
 
       {expenses.categoriesByMonth && Object.keys(expenses.categoriesByMonth).length >= 2 && (

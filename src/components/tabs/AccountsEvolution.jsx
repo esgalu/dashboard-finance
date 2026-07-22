@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { formatDateShort, formatCurrency, formatShortCurrency } from '../../utils/formatters'
+import ExpandableChart from '../ExpandableChart'
 import './AccountsEvolution.css'
 
 const ACCOUNT_COLORS = [
@@ -8,7 +9,7 @@ const ACCOUNT_COLORS = [
   '#f57c00', '#7b1fa2', '#00796b', '#512da8', '#e91e63'
 ]
 
-export default function AccountsEvolution({ accounts, trend }) {
+export default function AccountsEvolution({ accounts, trend, mobileMode }) {
   if (!accounts || accounts.length === 0 || !trend || trend.length === 0) {
     return (
       <div className="tab-content">
@@ -35,40 +36,77 @@ export default function AccountsEvolution({ accounts, trend }) {
   }, [accounts])
 
   const bancos = Object.keys(accountsByBank).sort()
-  const [selectedBanco, setSelectedBanco] = useState('todos')
-  const [selectedEtiquetas, setSelectedEtiquetas] = useState(accounts.map(a => a.name))
 
-  const visibleEtiquetas = useMemo(() => {
-    if (selectedBanco === 'todos') return accounts
-    return accountsByBank[selectedBanco] || []
-  }, [selectedBanco, accounts, accountsByBank])
+  // Cada fila del trend (wide format, una columna por cuenta individual) gana
+  // ademas una columna por banco con la suma de sus cuentas en esa fecha. No
+  // colisiona con las columnas existentes: para bancos de una sola cuenta sin
+  // etiqueta, account.name === banco, asi que el total coincide con el valor
+  // original de esa columna.
+  const trendWithBankTotals = useMemo(() => {
+    return trend.map(row => {
+      const bankTotals = {}
+      accounts.forEach(a => {
+        bankTotals[a.banco] = (bankTotals[a.banco] || 0) + (row[a.name] || 0)
+      })
+      return { ...row, ...bankTotals }
+    })
+  }, [trend, accounts])
 
-  const handleBancoChange = (banco) => {
-    setSelectedBanco(banco)
-    if (banco === 'todos') {
-      setSelectedEtiquetas(accounts.map(a => a.name))
-    } else {
-      setSelectedEtiquetas((accountsByBank[banco] || []).map(a => a.name))
-    }
-  }
+  const [visibleBancos, setVisibleBancos] = useState(bancos)
+  const [expandedBancos, setExpandedBancos] = useState([])
+  const [selectedAccountsByBanco, setSelectedAccountsByBanco] = useState({})
 
-  const handleEtiquetaToggle = (name) => {
-    setSelectedEtiquetas(prev =>
-      prev.includes(name)
-        ? prev.filter(n => n !== name)
-        : [...prev, name]
+  const getSelectedAccounts = (banco) =>
+    selectedAccountsByBanco[banco] || (accountsByBank[banco] || []).map(a => a.name)
+
+  const toggleBancoVisible = (banco) => {
+    setVisibleBancos(prev =>
+      prev.includes(banco) ? prev.filter(b => b !== banco) : [...prev, banco]
     )
   }
 
-  const handleSelectAll = () => {
-    const visible = visibleEtiquetas.map(a => a.name)
-    const allSelected = visible.every(n => selectedEtiquetas.includes(n))
-    if (allSelected) {
-      setSelectedEtiquetas(prev => prev.filter(n => !visible.includes(n)))
-    } else {
-      setSelectedEtiquetas(prev => [...new Set([...prev, ...visible])])
-    }
+  const toggleBancoExpanded = (banco) => {
+    if ((accountsByBank[banco] || []).length <= 1) return
+    setExpandedBancos(prev =>
+      prev.includes(banco) ? prev.filter(b => b !== banco) : [...prev, banco]
+    )
   }
+
+  const handleAccountToggle = (banco, name) => {
+    setSelectedAccountsByBanco(prev => {
+      const current = prev[banco] || (accountsByBank[banco] || []).map(a => a.name)
+      const next = current.includes(name)
+        ? current.filter(n => n !== name)
+        : [...current, name]
+      return { ...prev, [banco]: next }
+    })
+  }
+
+  const handleSelectAllBancos = () => {
+    setVisibleBancos(prev => (prev.length === bancos.length ? [] : bancos))
+  }
+
+  // Una linea por banco visible (agregada), salvo que el banco este expandido
+  // y tenga mas de una cuenta, en cuyo caso se reemplaza por una linea por
+  // cada cuenta individual marcada dentro de ese banco.
+  const linesToRender = useMemo(() => {
+    const lines = []
+    bancos.forEach(banco => {
+      if (!visibleBancos.includes(banco)) return
+      const bankAccounts = accountsByBank[banco] || []
+      if (expandedBancos.includes(banco) && bankAccounts.length > 1) {
+        const selected = getSelectedAccounts(banco)
+        bankAccounts.forEach(acc => {
+          if (selected.includes(acc.name)) {
+            lines.push({ key: acc.name, dataKey: acc.name, label: acc.etiqueta || acc.name })
+          }
+        })
+      } else {
+        lines.push({ key: banco, dataKey: banco, label: banco })
+      }
+    })
+    return lines
+  }, [bancos, visibleBancos, expandedBancos, selectedAccountsByBanco, accountsByBank])
 
   return (
     <div className="tab-content">
@@ -77,97 +115,117 @@ export default function AccountsEvolution({ accounts, trend }) {
 
         <div className="account-filter">
           <div className="filter-row">
-            <div className="filter-group">
-              <label className="filter-label">Banco</label>
-              <select
-                className="filter-select"
-                value={selectedBanco}
-                onChange={e => handleBancoChange(e.target.value)}
-              >
-                <option value="todos">Todos los bancos</option>
-                {bancos.map(b => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
-            </div>
-
-            <button className="select-all-btn" onClick={handleSelectAll}>
-              {visibleEtiquetas.every(a => selectedEtiquetas.includes(a.name))
-                ? 'Deseleccionar todas'
-                : 'Seleccionar todas'}
+            <label className="filter-label">Bancos</label>
+            <button className="select-all-btn" onClick={handleSelectAllBancos}>
+              {visibleBancos.length === bancos.length ? 'Deseleccionar todos' : 'Seleccionar todos'}
             </button>
           </div>
 
-          <div className="account-checkboxes">
-            {visibleEtiquetas.map((account, idx) => (
-              <label key={account.name} className="account-checkbox">
-                <input
-                  type="checkbox"
-                  checked={selectedEtiquetas.includes(account.name)}
-                  onChange={() => handleEtiquetaToggle(account.name)}
-                />
-                <span
-                  className="checkbox-color"
-                  style={{ backgroundColor: ACCOUNT_COLORS[accounts.indexOf(account) % ACCOUNT_COLORS.length] }}
-                />
-                <span className="checkbox-label">{account.etiqueta || account.name}</span>
-              </label>
-            ))}
+          <div className="bank-filter-list">
+            {bancos.map((banco, idx) => {
+              const bankAccounts = accountsByBank[banco] || []
+              const isExpandable = bankAccounts.length > 1
+              const isExpanded = isExpandable && expandedBancos.includes(banco)
+              const isVisible = visibleBancos.includes(banco)
+              const selectedForBanco = getSelectedAccounts(banco)
+              const color = ACCOUNT_COLORS[idx % ACCOUNT_COLORS.length]
+
+              return (
+                <div key={banco} className="bank-filter-group">
+                  <div className="bank-filter-row">
+                    <label className="account-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={isVisible}
+                        onChange={() => toggleBancoVisible(banco)}
+                      />
+                      <span className="checkbox-color" style={{ backgroundColor: color }} />
+                      <span className="checkbox-label">{banco}</span>
+                    </label>
+
+                    {isExpandable && (
+                      <button
+                        type="button"
+                        className={`bank-expand-btn${isExpanded ? ' bank-expand-btn--open' : ''}`}
+                        onClick={() => toggleBancoExpanded(banco)}
+                        aria-expanded={isExpanded}
+                        aria-label={isExpanded ? `Colapsar cuentas de ${banco}` : `Expandir cuentas de ${banco}`}
+                      >
+                        <span className={`bank-chevron${isExpanded ? ' bank-chevron--open' : ''}`} aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                    )}
+                  </div>
+
+                  {isExpanded && (
+                    <div className="bank-subaccount-checkboxes">
+                      {bankAccounts.map(account => (
+                        <label key={account.name} className="account-checkbox account-checkbox--sub">
+                          <input
+                            type="checkbox"
+                            checked={selectedForBanco.includes(account.name)}
+                            onChange={() => handleAccountToggle(banco, account.name)}
+                          />
+                          <span className="checkbox-label">{account.etiqueta || account.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
 
-        {selectedEtiquetas.length > 0 ? (
-          <div className="chart-container tall">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trend} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(date) => formatDateShort(date)}
-                  interval={Math.max(0, Math.floor(trend.length / 6) - 1)}
-                />
-                <YAxis
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={formatShortCurrency}
-                />
-                <Tooltip
-                  formatter={(value) => formatCurrency(value)}
-                  labelFormatter={(date) => formatDateShort(date)}
-                  contentStyle={{
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '8px',
-                    padding: '10px',
-                    color: 'var(--text-primary)'
-                  }}
-                />
-                <Legend />
-                {selectedEtiquetas.map((accountName) => {
-                  const accountData = accounts.find(a => a.name === accountName)
-                  if (!accountData) return null
-                  const globalIdx = accounts.indexOf(accountData)
-
-                  return (
+        {linesToRender.length > 0 ? (
+          <ExpandableChart mobileMode={mobileMode} title="Evolución de Cuentas">
+            <div className="chart-container tall">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={trendWithBankTotals} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(date) => formatDateShort(date)}
+                    interval={Math.max(0, Math.floor(trend.length / 6) - 1)}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={formatShortCurrency}
+                  />
+                  <Tooltip
+                    formatter={(value) => formatCurrency(value)}
+                    labelFormatter={(date) => formatDateShort(date)}
+                    contentStyle={{
+                      backgroundColor: 'var(--bg-surface)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      color: 'var(--text-primary)'
+                    }}
+                  />
+                  <Legend />
+                  {linesToRender.map((line, idx) => (
                     <Line
-                      key={accountName}
+                      key={line.key}
                       type="monotone"
-                      dataKey={accountName}
-                      stroke={ACCOUNT_COLORS[globalIdx % ACCOUNT_COLORS.length]}
+                      dataKey={line.dataKey}
+                      stroke={ACCOUNT_COLORS[idx % ACCOUNT_COLORS.length]}
                       strokeWidth={2}
                       dot={{ r: 3 }}
                       activeDot={{ r: 5 }}
                       isAnimationActive={false}
-                      name={accountData.etiqueta || accountName}
+                      name={line.label}
                     />
-                  )
-                })}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </ExpandableChart>
         ) : (
           <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>
-            Selecciona al menos una cuenta para ver la evolución
+            Selecciona al menos un banco o cuenta para ver la evolución
           </p>
         )}
       </div>
