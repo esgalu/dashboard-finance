@@ -14,6 +14,76 @@ function findClosestEntry(entries, targetDate) {
   })
 }
 
+// Detecta si un banco tuvo un DEPOSITO o RETIRO entre dos fechas de snapshot.
+// Limite exclusivo-inicio / inclusivo-fin: un movimiento en la fecha inicial
+// ya esta reflejado en ese saldo (no afecta el delta del periodo), mientras
+// que uno en la fecha final si esta incluido en el saldo final y contamina
+// el % de cambio de ese periodo.
+function periodHasDepositOrWithdrawal(movements, banco, startDateStr, endDateStr) {
+  const start = new Date(startDateStr)
+  const end = new Date(endDateStr)
+  return movements.some(m => {
+    if (m.banco !== banco) return false
+    if (m.tipo !== 'DEPOSITO' && m.tipo !== 'RETIRO') return false
+    const d = new Date(m.fecha)
+    return d > start && d <= end
+  })
+}
+
+// Tasa de crecimiento organico (solo interes, sin depositos/retiros) por
+// banco, promediando los periodos entre snapshots consecutivos que no
+// tuvieron movimientos y cuyo cambio fue positivo. Normaliza cada periodo a
+// tasa semanal usando el delta real de dias, en vez de asumir cadencia fija.
+function calculateOrganicGrowthRate(bankTimeSeriesMap, movements) {
+  const perBankRates = {}
+
+  Object.entries(bankTimeSeriesMap).forEach(([banco, dateMap]) => {
+    const series = Object.entries(dateMap)
+      .map(([date, total]) => ({ date, total }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+
+    const rates = []
+    for (let i = 1; i < series.length; i++) {
+      const prev = series[i - 1]
+      const curr = series[i]
+      if (prev.total <= 0) continue
+
+      const pctChange = (curr.total - prev.total) / prev.total
+      if (pctChange < 0) continue
+      if (periodHasDepositOrWithdrawal(movements, banco, prev.date, curr.date)) continue
+
+      const days = (new Date(curr.date) - new Date(prev.date)) / 86400000
+      if (days <= 0) continue
+      rates.push(Math.pow(1 + pctChange, 7 / days) - 1)
+    }
+
+    if (rates.length > 0) {
+      perBankRates[banco] = rates.reduce((a, b) => a + b, 0) / rates.length
+    }
+  })
+
+  return perBankRates
+}
+
+// Combina las tasas por banco en una sola tasa semanal, ponderada por el
+// ultimo saldo conocido de cada banco (los bancos con mas plata pesan mas).
+function blendOrganicRate(perBankRates, bankTimeSeriesMap) {
+  let weightedSum = 0
+  let totalWeight = 0
+
+  Object.entries(perBankRates).forEach(([banco, rate]) => {
+    const dateMap = bankTimeSeriesMap[banco]
+    const latestDate = Object.keys(dateMap).sort().pop()
+    const weight = dateMap[latestDate]
+    if (weight <= 0) return
+
+    weightedSum += rate * weight
+    totalWeight += weight
+  })
+
+  return totalWeight > 0 ? weightedSum / totalWeight : 0
+}
+
 export function useDashboardData() {
   const { data: rawData, isLoading, error, dataSource, refreshData } = useData()
 
@@ -50,7 +120,6 @@ export function useDashboardData() {
     const avgMonthlyExpense = rawData.monthlyExpense.length > 0
       ? rawData.monthlyExpense.reduce((sum, m) => sum + m.total, 0) / rawData.monthlyExpense.length
       : 1
-    const monthsOfRunway = Math.round(savingsValue / avgMonthlyExpense)
 
     const currentMonthExpense = rawData.monthlyExpense.length > 0
       ? rawData.monthlyExpense[rawData.monthlyExpense.length - 1].total
@@ -114,6 +183,10 @@ export function useDashboardData() {
     }).sort((a, b) => b.porcentaje - a.porcentaje)
 
     const totalBudget = budgetRaw.reduce((sum, b) => sum + b.presupuesto, 0)
+    // Runway usa el presupuesto mensual total en vez del promedio de gasto
+    // real, para que refleje cuanto deberia durar el ahorro si te ajustas
+    // al presupuesto. Si no hay presupuesto cargado, cae al promedio real.
+    const monthsOfRunway = Math.round(savingsValue / (totalBudget > 0 ? totalBudget : avgMonthlyExpense))
     const totalBudgetSpent = budgetData.reduce((sum, b) => sum + b.gastado, 0)
     const budgetUsed = totalBudget > 0 ? (totalBudgetSpent / totalBudget) * 100 : 0
     const budgetRemaining = totalBudget - totalBudgetSpent
@@ -286,6 +359,21 @@ export function useDashboardData() {
       const weeks = Math.max((lastDate - firstDate) / (7 * 86400000), 1)
       const weeklyGrowth = (last.total - first.total) / weeks
 
+      // Banda de incertidumbre en forma de cono simetrico: el ancho (mismo
+      // hacia arriba y hacia abajo del valor proyectado central) se compone
+      // un 3% semana a semana a partir del ultimo valor real. Se calcula
+      // como delta absoluto en vez de aplicar +3%/-3% de forma independiente
+      // a cada limite, porque eso da un crecimiento compuesto asimetrico
+      // (1.03^12 ≈ +42.6% pero 0.97^12 ≈ -30.6%), visualmente mas ancho
+      // hacia arriba.
+      const BAND_RATE = 0.003
+
+      // Tasa de crecimiento organico (solo interes, sin depositos/retiros),
+      // ponderada por saldo actual de cada banco. Sirve para una linea de
+      // proyeccion alternativa: "que pasaria si no deposito mas plata".
+      const perBankRates = calculateOrganicGrowthRate(bankTimeSeriesMap, movements)
+      const organicWeeklyRate = blendOrganicRate(perBankRates, bankTimeSeriesMap)
+
       const points = []
       for (let w = 1; w <= 12; w++) {
         const futureDate = new Date(lastDate)
@@ -293,13 +381,32 @@ export function useDashboardData() {
         const y = futureDate.getFullYear()
         const m = String(futureDate.getMonth() + 1).padStart(2, '0')
         const d = String(futureDate.getDate()).padStart(2, '0')
+        const projected = last.total + weeklyGrowth * w
+        const bandWidth = last.total * (Math.pow(1 + BAND_RATE, w) - 1)
         points.push({
           date: `${y}-${m}-${d}`,
-          projected: Math.round(last.total + weeklyGrowth * w)
+          projected: Math.round(projected),
+          projectedUpper: Math.round(projected + bandWidth),
+          projectedLower: Math.round(projected - bandWidth),
+          projectedOrganic: Math.round(last.total * Math.pow(1 + organicWeeklyRate, w))
         })
       }
-      // Agregar punto de union: ultimo real tambien como projected
-      return [{ date: last.date, total: last.total, projected: last.total }, ...points]
+      // Agregar punto de union: ultimo real tambien como projected. Se fija
+      // projectedUpper/projectedLower/projectedOrganic al mismo valor (ancho
+      // de banda cero) ya que este punto es un dato real conocido, no una
+      // proyeccion: las lineas deben abrirse a partir de aqui, no dar un
+      // salto brusco.
+      return [
+        {
+          date: last.date,
+          total: last.total,
+          projected: last.total,
+          projectedUpper: last.total,
+          projectedLower: last.total,
+          projectedOrganic: last.total
+        },
+        ...points
+      ]
     })()
 
     // Flujo de caja: ingresos vs gastos por mes
