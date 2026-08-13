@@ -9,16 +9,19 @@ const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID
 
 const CLASIFICACION_ICONS = {
   HOGAR: '🏠',
-  DEPORTE: '🏃',
+  DEPORTE: '🚴🏽‍♂️',
   PAREJA: '❤️',
   PERRITOS: '🐶',
   MERCADO: '🛒',
-  PERSONAL: '🧴',
+  PERSONAL: '🧍',
   AMIGOS: '🎉',
-  'AI & STREAMING': '🎬',
+  'AI & STREAMING': '📱',
   AUTO: '🚗',
   FAMILIA: '👨‍👩‍👧',
-  BANCO: '🏦'
+  BANCO: '🏦',
+  PENSION: '🪎',
+  IMPUESTOS: '🧾',
+  SALUD: '🏥'
 }
 const DEFAULT_ICON = '🏷️'
 
