@@ -5,6 +5,7 @@ import Budget from './tabs/Budget'
 import CashFlow from './tabs/CashFlow'
 import Accounts from './tabs/Accounts'
 import Trends from './tabs/Trends'
+import Calendar from './tabs/Calendar'
 import MobileBottomNav from './MobileBottomNav'
 import AddExpenseModal from './AddExpenseModal'
 import './MobileDashboard.css'
@@ -15,9 +16,10 @@ const TAB_TITLES = {
   cashflow: 'Flujo de Caja',
   accounts: 'Cuentas',
   trends: 'Tendencias',
+  calendar: 'Calendario',
 }
 
-export default function MobileDashboard({ kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountsByBank, accountTimeSeries, clasificacionOptions, categoriasByClasificacion, refreshData, isLoading }) {
+export default function MobileDashboard({ kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountsByBank, accountTimeSeries, expensesByDay, clasificacionOptions, categoriasByClasificacion, refreshData, isLoading }) {
   const [activeTab, setActiveTab] = useState('overview')
   const [showAddExpense, setShowAddExpense] = useState(false)
   const totalBudget = budgetData?.reduce((sum, b) => sum + b.presupuesto, 0) || 0
@@ -60,6 +62,7 @@ export default function MobileDashboard({ kpis, expenses, trend, projectedTrend,
         {activeTab === 'cashflow' && <CashFlow cashFlow={cashFlow} totalBudget={totalBudget} mobileMode />}
         {activeTab === 'accounts' && <Accounts accounts={accounts} accountsByBank={accountsByBank} total={kpis?.patrimony} accountTimeSeries={accountTimeSeries} mobileMode />}
         {activeTab === 'trends' && <Trends trend={trend} projectedTrend={projectedTrend} accounts={accounts} mobileMode />}
+        {activeTab === 'calendar' && <Calendar expensesByDay={expensesByDay} mobileMode />}
       </div>
 
       <MobileBottomNav activeTab={activeTab} onTabChange={setActiveTab} />

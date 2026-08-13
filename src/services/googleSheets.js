@@ -138,6 +138,7 @@ function parseCostsSheet(rows) {
     const row = rows[r]
     if (!row || row.length < 5) continue
 
+    const fecha = serialToDate(row[0])
     const yearMonth = row[1] ? String(row[1]).trim() : ''
     const clasificacion = row[2] ? String(row[2]).trim() : ''
     const categoria = row[3] ? String(row[3]).trim() : ''
@@ -148,7 +149,7 @@ function parseCostsSheet(rows) {
     categoryTotals[clasificacion] = (categoryTotals[clasificacion] || 0) + costo
     grandTotal += costo
 
-    allTransactions.push({ yearMonth, clasificacion, categoria, costo })
+    allTransactions.push({ fecha, yearMonth, clasificacion, categoria, costo })
 
     if (yearMonth) {
       monthlyTotals[yearMonth] = (monthlyTotals[yearMonth] || 0) + costo

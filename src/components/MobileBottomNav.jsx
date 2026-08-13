@@ -56,6 +56,21 @@ const TABS = [
         <polyline points="16 7 22 7 22 13"/>
       </svg>
     )
+  },
+  {
+    id: 'calendar',
+    label: 'Calendario',
+    icon: (
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/>
+        <path d="M3 9h18"/>
+        <path d="M8 2v4"/>
+        <path d="M16 2v4"/>
+        <circle cx="8" cy="14" r="1" fill="currentColor" stroke="none"/>
+        <circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/>
+        <circle cx="16" cy="14" r="1" fill="currentColor" stroke="none"/>
+      </svg>
+    )
   }
 ]
 

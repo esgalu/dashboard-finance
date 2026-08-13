@@ -439,6 +439,20 @@ export function useDashboardData() {
         .slice(0, 5)
     })()
 
+    // Gastos agrupados por dia exacto, para el calendario: cada dia con
+    // registros trae su total y el detalle ordenado de mayor a menor costo
+    const expensesByDay = (() => {
+      const byDay = {}
+      topExpensesRaw.forEach(e => {
+        if (!e.fecha) return
+        if (!byDay[e.fecha]) byDay[e.fecha] = { total: 0, items: [] }
+        byDay[e.fecha].total += e.costo
+        byDay[e.fecha].items.push({ clasificacion: e.clasificacion, categoria: e.categoria, costo: e.costo })
+      })
+      Object.values(byDay).forEach(d => d.items.sort((a, b) => b.costo - a.costo))
+      return byDay
+    })()
+
     return {
       kpis,
       expenses: {
@@ -455,7 +469,8 @@ export function useDashboardData() {
       accounts: accountsProcessed,
       accountsByBank,
       movements,
-      accountTimeSeries
+      accountTimeSeries,
+      expensesByDay
     }
   }, [rawData])
 

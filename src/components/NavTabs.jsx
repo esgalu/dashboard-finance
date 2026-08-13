@@ -6,7 +6,8 @@ export default function NavTabs({ activeTab, onTabChange }) {
     { id: 'budget', label: 'Presupuesto' },
     { id: 'cashflow', label: 'Flujo' },
     { id: 'accounts', label: 'Cuentas' },
-    { id: 'trends', label: 'Tendencias' }
+    { id: 'trends', label: 'Tendencias' },
+    { id: 'calendar', label: 'Calendario' }
   ]
 
   return (

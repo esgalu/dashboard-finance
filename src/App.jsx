@@ -7,6 +7,7 @@ import Trends from './components/tabs/Trends'
 import CashFlow from './components/tabs/CashFlow'
 import Budget from './components/tabs/Budget'
 import Accounts from './components/tabs/Accounts'
+import Calendar from './components/tabs/Calendar'
 import AuthStatus from './components/AuthStatus'
 import LoadingOverlay from './components/LoadingOverlay'
 import ErrorBanner from './components/ErrorBanner'
@@ -31,7 +32,7 @@ function App() {
     window.addEventListener('resize', handler)
     return () => window.removeEventListener('resize', handler)
   }, [])
-  const { kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountsByBank, movements, accountTimeSeries, isLoading, error, dataSource, refreshData } = useDashboardData()
+  const { kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountsByBank, movements, accountTimeSeries, expensesByDay, isLoading, error, dataSource, refreshData } = useDashboardData()
 
   const clasificacionOptions = useMemo(() => expenses?.categories?.map(c => c.name) || [], [expenses])
 
@@ -98,6 +99,7 @@ function App() {
           accounts={accounts}
           accountsByBank={accountsByBank}
           accountTimeSeries={accountTimeSeries}
+          expensesByDay={expensesByDay}
           clasificacionOptions={clasificacionOptions}
           categoriasByClasificacion={categoriasByClasificacion}
           refreshData={refreshData}
@@ -151,6 +153,7 @@ function App() {
               {activeTab === 'cashflow' && <CashFlow cashFlow={cashFlow} totalBudget={budgetData?.reduce((sum, b) => sum + b.presupuesto, 0) || 0} />}
               {activeTab === 'accounts' && <Accounts accounts={accounts} accountsByBank={accountsByBank} total={kpis.patrimony} accountTimeSeries={accountTimeSeries} />}
               {activeTab === 'trends' && <Trends trend={trend} projectedTrend={projectedTrend} accounts={accounts} />}
+              {activeTab === 'calendar' && <Calendar expensesByDay={expensesByDay} />}
             </div>
           </>
         )}
@@ -174,6 +177,7 @@ function App() {
             accounts={accounts}
             accountsByBank={accountsByBank}
             accountTimeSeries={accountTimeSeries}
+            expensesByDay={expensesByDay}
             clasificacionOptions={clasificacionOptions}
             categoriasByClasificacion={categoriasByClasificacion}
             refreshData={refreshData}
