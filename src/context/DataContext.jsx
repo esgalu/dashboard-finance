@@ -9,8 +9,8 @@ const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID
 
 export function DataProvider({ children }) {
   const { accessToken, isAuthenticated } = useAuth()
-  const [data, setData] = useState(DATA)
-  const [dataSource, setDataSource] = useState('local')
+  const [data, setData] = useState(null)
+  const [dataSource, setDataSource] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
