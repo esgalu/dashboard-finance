@@ -32,7 +32,7 @@ function App() {
     window.addEventListener('resize', handler)
     return () => window.removeEventListener('resize', handler)
   }, [])
-  const { kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountsByBank, movements, accountTimeSeries, expensesByDay, isLoading, error, dataSource, refreshData } = useDashboardData()
+  const { kpis, expenses, trend, trendExPension, pensionTrend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountsByBank, movements, accountTimeSeries, expensesByDay, isLoading, error, dataSource, refreshData } = useDashboardData()
 
   const clasificacionOptions = useMemo(() => expenses?.categories?.map(c => c.name) || [], [expenses])
 
@@ -93,6 +93,8 @@ function App() {
           expenses={expenses}
           trend={trend}
           projectedTrend={projectedTrend}
+          trendExPension={trendExPension}
+          pensionTrend={pensionTrend}
           cashFlow={cashFlow}
           topExpenses={topExpenses}
           budgetData={budgetData}
@@ -152,7 +154,7 @@ function App() {
               {activeTab === 'budget' && <Budget budgetData={budgetData} kpis={kpis} expenses={expenses} />}
               {activeTab === 'cashflow' && <CashFlow cashFlow={cashFlow} totalBudget={budgetData?.reduce((sum, b) => sum + b.presupuesto, 0) || 0} />}
               {activeTab === 'accounts' && <Accounts accounts={accounts} accountsByBank={accountsByBank} total={kpis.patrimony} accountTimeSeries={accountTimeSeries} />}
-              {activeTab === 'trends' && <Trends trend={trend} projectedTrend={projectedTrend} accounts={accounts} />}
+              {activeTab === 'trends' && <Trends trend={trendExPension} pensionTrend={pensionTrend} projectedTrend={projectedTrend} accounts={accounts} />}
               {activeTab === 'calendar' && <Calendar expensesByDay={expensesByDay} />}
             </div>
           </>
@@ -171,6 +173,8 @@ function App() {
             expenses={expenses}
             trend={trend}
             projectedTrend={projectedTrend}
+            trendExPension={trendExPension}
+            pensionTrend={pensionTrend}
             cashFlow={cashFlow}
             topExpenses={topExpenses}
             budgetData={budgetData}

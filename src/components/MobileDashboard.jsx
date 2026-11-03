@@ -19,7 +19,7 @@ const TAB_TITLES = {
   calendar: 'Calendario',
 }
 
-export default function MobileDashboard({ kpis, expenses, trend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountsByBank, accountTimeSeries, expensesByDay, clasificacionOptions, categoriasByClasificacion, refreshData, isLoading }) {
+export default function MobileDashboard({ kpis, expenses, trend, trendExPension, pensionTrend, projectedTrend, cashFlow, topExpenses, budgetData, accounts, accountsByBank, accountTimeSeries, expensesByDay, clasificacionOptions, categoriasByClasificacion, refreshData, isLoading }) {
   const [activeTab, setActiveTab] = useState('overview')
   const [showAddExpense, setShowAddExpense] = useState(false)
   const totalBudget = budgetData?.reduce((sum, b) => sum + b.presupuesto, 0) || 0
@@ -61,7 +61,7 @@ export default function MobileDashboard({ kpis, expenses, trend, projectedTrend,
         {activeTab === 'budget' && <Budget budgetData={budgetData} kpis={kpis} expenses={expenses} mobileMode />}
         {activeTab === 'cashflow' && <CashFlow cashFlow={cashFlow} totalBudget={totalBudget} mobileMode />}
         {activeTab === 'accounts' && <Accounts accounts={accounts} accountsByBank={accountsByBank} total={kpis?.patrimony} accountTimeSeries={accountTimeSeries} mobileMode />}
-        {activeTab === 'trends' && <Trends trend={trend} projectedTrend={projectedTrend} accounts={accounts} mobileMode />}
+        {activeTab === 'trends' && <Trends trend={trendExPension} pensionTrend={pensionTrend} projectedTrend={projectedTrend} accounts={accounts} mobileMode />}
         {activeTab === 'calendar' && <Calendar expensesByDay={expensesByDay} mobileMode />}
       </div>
 

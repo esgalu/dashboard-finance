@@ -103,9 +103,14 @@ export function useDashboardData() {
 
     const investmentBanks = ['TRI', 'DOLARES', 'PROTECCION']
     const savingsBanks = ['NU', 'PIBANK', 'LULO', 'BANCOLOMBIA', 'BANCOLOMIA']
+    const matchesBank = (key, banks) => banks.some(b => key.startsWith(b + ' -') || key === b)
+    // PROTECCION tiene cuentas de pension obligatoria y de inversion
+    // (voluntarias, cesantias, etc.): solo las que dicen "PENSION" en la
+    // etiqueta cuentan como pension, el resto se trata como inversion.
+    const isPensionAccount = (key) => key.startsWith('PROTECCION -') && /PENSI/i.test(key)
 
     const investmentEntries = Object.entries(savingsData)
-      .filter(([key]) => investmentBanks.some(b => key.startsWith(b + ' -') || key === b))
+      .filter(([key]) => matchesBank(key, investmentBanks) && !isPensionAccount(key))
     const investmentValue = investmentEntries.reduce((sum, [_, value]) => sum + value, 0)
     const investmentAccounts = investmentEntries
       .filter(([_, v]) => v > 0)
@@ -114,8 +119,28 @@ export function useDashboardData() {
       .join(', ')
 
     const savingsValue = Object.entries(savingsData)
-      .filter(([key]) => savingsBanks.some(b => key.startsWith(b + ' -') || key === b))
+      .filter(([key]) => matchesBank(key, savingsBanks))
       .reduce((sum, [_, value]) => sum + value, 0)
+
+    const pensionValue = Object.entries(savingsData)
+      .filter(([key]) => isPensionAccount(key))
+      .reduce((sum, [_, value]) => sum + value, 0)
+
+    // Series de patrimonio por fecha separando pensiones: la grafica principal
+    // de Tendencias (y su proyeccion) excluye pensiones porque es dinero no
+    // disponible hasta el retiro; las pensiones tienen su propia grafica.
+    const patrimonyExPensionByDate = {}
+    const pensionByDate = {}
+    snapshots.forEach(s => {
+      const key = s.etiqueta ? `${s.banco} - ${s.etiqueta}` : s.banco
+      const target = isPensionAccount(key) ? pensionByDate : patrimonyExPensionByDate
+      target[s.fecha] = (target[s.fecha] || 0) + s.saldo
+    })
+    const toSeries = (byDate) => Object.entries(byDate)
+      .map(([date, total]) => ({ date, total: Math.round(total) }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+    const trendExPension = toSeries(patrimonyExPensionByDate)
+    const pensionTrend = toSeries(pensionByDate)
 
     const avgMonthlyExpense = rawData.monthlyExpense.length > 0
       ? rawData.monthlyExpense.reduce((sum, m) => sum + m.total, 0) / rawData.monthlyExpense.length
@@ -204,6 +229,7 @@ export function useDashboardData() {
       savings: savingsValue,
       investments: investmentValue,
       investmentAccounts,
+      pensions: pensionValue,
       runway: monthsOfRunway,
       currentMonthExpense,
       expenseChange,
@@ -349,11 +375,11 @@ export function useDashboardData() {
       return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date))
     })()
 
-    // Proyeccion patrimonial (12 semanas ~3 meses)
+    // Proyeccion patrimonial (12 semanas ~3 meses), sin pensiones
     const projectedTrend = (() => {
-      if (trendData.length < 2) return []
-      const first = trendData[0]
-      const last = trendData[trendData.length - 1]
+      if (trendExPension.length < 2) return []
+      const first = trendExPension[0]
+      const last = trendExPension[trendExPension.length - 1]
       const firstDate = new Date(first.date)
       const lastDate = new Date(last.date)
       const weeks = Math.max((lastDate - firstDate) / (7 * 86400000), 1)
@@ -371,8 +397,15 @@ export function useDashboardData() {
       // Tasa de crecimiento organico (solo interes, sin depositos/retiros),
       // ponderada por saldo actual de cada banco. Sirve para una linea de
       // proyeccion alternativa: "que pasaria si no deposito mas plata".
-      const perBankRates = calculateOrganicGrowthRate(bankTimeSeriesMap, movements)
-      const organicWeeklyRate = blendOrganicRate(perBankRates, bankTimeSeriesMap)
+      const nonPensionBankSeries = {}
+      snapshots.forEach(s => {
+        const key = s.etiqueta ? `${s.banco} - ${s.etiqueta}` : s.banco
+        if (isPensionAccount(key)) return
+        if (!nonPensionBankSeries[s.banco]) nonPensionBankSeries[s.banco] = {}
+        nonPensionBankSeries[s.banco][s.fecha] = (nonPensionBankSeries[s.banco][s.fecha] || 0) + s.saldo
+      })
+      const perBankRates = calculateOrganicGrowthRate(nonPensionBankSeries, movements)
+      const organicWeeklyRate = blendOrganicRate(perBankRates, nonPensionBankSeries)
 
       const points = []
       for (let w = 1; w <= 12; w++) {
@@ -462,6 +495,8 @@ export function useDashboardData() {
         monthly: rawData.monthlyExpense
       },
       trend: trendData,
+      trendExPension,
+      pensionTrend,
       projectedTrend,
       cashFlow,
       topExpenses,

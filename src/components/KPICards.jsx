@@ -20,7 +20,19 @@ export default function KPICards({ kpis }) {
       label: 'Inversiones',
       value: formatShortCurrency(kpis.investments),
       subtitle: formatCurrency(kpis.investments),
-      info: `Cuentas: ${kpis.investmentAccounts || 'TRI + DOLARES + PROTECCION'}`
+      info: `Cuentas: ${kpis.investmentAccounts || 'TRI + DOLARES + PROTECCION (sin pensión)'}`
+    },
+    {
+      label: 'Pensiones',
+      value: formatShortCurrency(kpis.pensions),
+      subtitle: formatCurrency(kpis.pensions),
+      info: 'Cuentas de PROTECCION con "PENSION" en la etiqueta. No disponible hasta el retiro.'
+    },
+    {
+      label: 'Inversiones + CDTs',
+      value: formatShortCurrency(kpis.investments + kpis.savings),
+      subtitle: formatCurrency(kpis.investments + kpis.savings),
+      info: `Inversiones ${formatShortCurrency(kpis.investments)} + CDTs ${formatShortCurrency(kpis.savings)}.`
     },
     {
       label: 'Meses de Runway',

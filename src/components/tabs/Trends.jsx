@@ -3,7 +3,7 @@ import { formatDateShort, formatCurrency, formatShortCurrency, calculateChange }
 import ExpandableChart from '../ExpandableChart'
 import '../tabs/Trends.css'
 
-export default function Trends({ trend, projectedTrend, accounts, mobileMode }) {
+export default function Trends({ trend, pensionTrend, projectedTrend, accounts, mobileMode }) {
   if (!trend || !Array.isArray(trend) || trend.length === 0) {
     return (
       <div className="tab-content">
@@ -99,7 +99,7 @@ export default function Trends({ trend, projectedTrend, accounts, mobileMode }) 
       <div className="section">
         <div className="trends-header">
           <div>
-            <h2>Evolución del Patrimonio</h2>
+            <h2>Evolución del Patrimonio (sin pensiones)</h2>
             <p className="trends-subtitle">
               <span style={{ color: trendColor, fontWeight: 'bold' }}>
                 {trendDirection} {Math.abs(changePercent).toFixed(1)}%
@@ -252,6 +252,8 @@ export default function Trends({ trend, projectedTrend, accounts, mobileMode }) 
         </ExpandableChart>
       </div>
 
+      <PensionChart pensionTrend={pensionTrend} mobileMode={mobileMode} />
+
       {accounts && accounts.length > 0 && (
         <div className="section">
           <h2>Composición del Patrimonio</h2>
@@ -275,6 +277,78 @@ export default function Trends({ trend, projectedTrend, accounts, mobileMode }) 
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function PensionChart({ pensionTrend, mobileMode }) {
+  const series = (pensionTrend || []).filter(item => item.date && typeof item.total === 'number')
+  if (series.length === 0) return null
+
+  const first = series[0].total
+  const last = series[series.length - 1].total
+  const changePercent = calculateChange(last, first)
+  const trendColor = changePercent > 0 ? 'var(--color-success)' : 'var(--color-danger)'
+
+  return (
+    <div className="section">
+      <div className="trends-header">
+        <div>
+          <h2>Evolución de Pensiones</h2>
+          <p className="trends-subtitle">
+            <span style={{ color: trendColor, fontWeight: 'bold' }}>
+              {changePercent > 0 ? '↑' : '↓'} {Math.abs(changePercent).toFixed(1)}%
+            </span>
+            {' '}desde {formatDateShort(series[0].date)}
+            <span className="trends-projection-label">
+              {' · '}Saldo actual: {formatCurrency(last)}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <ExpandableChart mobileMode={mobileMode} title="Evolución de Pensiones">
+        <div className="chart-container">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={series} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="date"
+                tick={mobileMode ? { fontSize: 9, angle: -45, textAnchor: 'end' } : { fontSize: 12 }}
+                tickFormatter={(date) => formatDateShort(date)}
+                interval={mobileMode ? Math.floor(series.length / 4) : Math.floor(series.length / 6)}
+                height={mobileMode ? 48 : 30}
+              />
+              <YAxis
+                tick={{ fontSize: mobileMode ? 9 : 12 }}
+                tickFormatter={formatShortCurrency}
+                width={mobileMode ? 52 : 60}
+                domain={['auto', 'auto']}
+              />
+              <Tooltip
+                labelFormatter={(date) => formatDateShort(date)}
+                formatter={(value) => [formatCurrency(value), 'Pensiones']}
+                contentStyle={{
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  color: 'var(--text-primary)'
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="total"
+                stroke="var(--color-primary)"
+                strokeWidth={3}
+                fill="var(--color-primary)"
+                fillOpacity={0.1}
+                dot={{ fill: 'var(--color-primary)', r: 3 }}
+                activeDot={{ r: 5 }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </ExpandableChart>
     </div>
   )
 }
